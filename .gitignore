@@ -1,0 +1,38 @@
+# Raw source data (large, re-downloadable — see README)
+data/raw/
+*.zip
+*.shp
+*.shx
+*.dbf
+*.prj
+*.cpg
+
+# Generated app data (rebuild with scripts/build_data.py)
+web/public/data/
+
+# Intermediate / large processed outputs
+data/interim/
+data/processed/*.parquet
+data/processed/*.csv
+data/processed/*_full.*
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Node / build
+node_modules/
+dist/
+.vite/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Secrets
+.env
+.env.*
+*.pem
