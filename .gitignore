@@ -7,9 +7,6 @@ data/raw/
 *.prj
 *.cpg
 
-# Generated app data (rebuild with scripts/build_data.py)
-web/public/data/
-
 # Intermediate / large processed outputs
 data/interim/
 data/processed/*.parquet

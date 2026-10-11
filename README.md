@@ -100,19 +100,27 @@ Raw files are not stored in this repository. Download them into `data/raw/` with
 Orange County addresses are geocoded with the U.S. Census Bureau geocoder on first run (cached in `data/interim/`).
 
 ## Run locally
-```bash
-# 1. Build the app data from the raw files (writes web/public/data/)
-python3 -m venv .venv
-.venv/bin/pip install -r requirements.txt
-.venv/bin/python scripts/fetch_transit.py      # transit stops (once)
-.venv/bin/python scripts/build_data.py         # statewide hardship index
-.venv/bin/python scripts/build_access.py       # statewide service access + recommendations (a few minutes)
+The processed data the app needs is committed in `web/public/data/`, so the app runs from a clean clone:
 
-# 2. Start the app
+```bash
 cd web
 npm install
 npm run dev        # http://localhost:5173
 ```
+
+To rebuild that data from the raw sources (see Data sources):
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python scripts/fetch_transit.py      # transit stops (once)
+.venv/bin/python scripts/build_data.py         # statewide hardship index
+.venv/bin/python scripts/build_access.py       # statewide service access + recommendations (several minutes)
+```
+
+## Deploy
+The site is static. `vercel.json` builds `web/` (`npm ci && npm run build`) and serves `web/dist`; no server or
+environment variables are needed.
 
 ## Limitations
 - Distances are straight-line, not walking or driving routes; residents are assumed evenly spread within a tract.
