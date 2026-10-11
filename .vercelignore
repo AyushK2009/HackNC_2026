@@ -1,5 +1,0 @@
-# The deployed site is the static web app; the Python data pipeline is not deployed.
-scripts/
-data/
-requirements.txt
-.venv/

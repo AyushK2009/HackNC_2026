@@ -119,8 +119,8 @@ python3 -m venv .venv
 ```
 
 ## Deploy
-The site is static. `vercel.json` builds `web/` (`npm ci && npm run build`) and serves `web/dist`; no server or
-environment variables are needed.
+The site is static. On Vercel, set **Root Directory** to `web`; `web/vercel.json` runs `npm ci` and
+`npm run build` and serves `dist`. No server or environment variables are needed.
 
 ## Limitations
 - Distances are straight-line, not walking or driving routes; residents are assumed evenly spread within a tract.
