@@ -1,6 +1,6 @@
 import type { ServiceKey, TractProps } from './metrics'
 import { HARDSHIP_METRICS, INDEX_FEATURE_LABELS, SERVICE_COLORS, STATUS_LABEL } from './metrics'
-import { fmtInt, ordinal, tractName } from './format'
+import { fmtInt, ordinal } from './format'
 import type { AccessData, Model } from './types'
 import type { ColorScale } from './scale'
 import type { AccessRow } from './access'
@@ -23,10 +23,8 @@ function Header({ tract, onClose }: { tract: TractProps; onClose: () => void }) 
   return (
     <header className="tract-head">
       <div>
-        <h2>{tractName(tract.geoid)}</h2>
-        <div className="muted">
-          {tract.county} · {fmtInt(tract.pop)} residents
-        </div>
+        <h2>{tract.county}</h2>
+        <div className="muted">A neighborhood of {fmtInt(tract.pop)} residents</div>
       </div>
       <button className="icon-btn" onClick={onClose} aria-label="Close tract details">
         ×
@@ -45,7 +43,7 @@ function HardshipBadge({ tract, color }: { tract: TractProps; color: ColorScale[
       </div>
       <div className="hero-text">
         <b>Economic Hardship Index</b>
-        <span className="muted">More hardship than {Math.round(tract.hardship_pct)}% of NC tracts</span>
+        <span className="muted">More hardship than {Math.round(tract.hardship_pct)}% of NC neighborhoods</span>
       </div>
     </div>
   )
@@ -127,7 +125,7 @@ export default function TractPanel({ tract, model, mode, hardshipColor, pctColor
                 <b>{v == null ? '—' : m.format(v)}</b>
               </div>
               {nc != null && (
-                <div className="nc-row" title={`Higher than ${Math.round(nc)}% of NC tracts`}>
+                <div className="nc-row" title={`Higher than ${Math.round(nc)}% of NC neighborhoods`}>
                   <div className="nc-bar">
                     <div className="nc-fill" style={{ width: `${nc}%` }} />
                   </div>

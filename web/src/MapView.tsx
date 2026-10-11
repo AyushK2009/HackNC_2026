@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
-import { MapContainer, Pane, TileLayer, useMap } from 'react-leaflet'
+import { MapContainer, Pane, TileLayer, ZoomControl, useMap } from 'react-leaflet'
 import L from 'leaflet'
 import type { Feature, FeatureCollection, Geometry, Point } from 'geojson'
 import type { TractProps, ServiceKey } from './metrics'
@@ -10,8 +10,9 @@ import type { FacilityProps } from './types'
 const ESRI = 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas'
 const ATTRIBUTION = 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenStreetMap contributors'
 const MILE = 1609.344
+export const NC_BOUNDS: L.LatLngBoundsExpression = [[33.84, -84.32], [36.59, -75.46]]
 
-export type ProposedSite = { lat: number; lon: number; label: string; title: string; color: string; radiusMi: number }
+export type ProposedSite = { lat: number; lon: number; label: string; title: string; color: string; radiusMi: number; cat?: ServiceKey; active?: boolean }
 
 type Props = {
   tracts: FeatureCollection<Geometry, TractProps>
@@ -21,7 +22,8 @@ type Props = {
   onSelect: (geoid: string) => void
   facilities: Feature<Point, FacilityProps>[]
   proposed: ProposedSite[]
-  focus: { key: string; bounds: L.LatLngBoundsExpression }
+  onSiteClick?: (i: number) => void
+  focus: { key: string; bounds: L.LatLngBoundsExpression; padding?: [number, number] }
 }
 
 // Tract choropleth drawn imperatively so restyling 2,600+ polygons doesn't rebuild the layer.
@@ -116,31 +118,45 @@ function FacilityLayer({ facilities }: { facilities: Feature<Point, FacilityProp
   return null
 }
 
-function ProposedLayer({ proposed }: { proposed: ProposedSite[] }) {
+// Small service glyphs for the proposed-site pins (same shapes as icons.tsx).
+const PIN_ICON: Record<ServiceKey, string> = {
+  food: '<path d="M12 7c-3.5-2.5-8 0-7 5s4 8 7 7c3 1 6-2 7-7s-3.5-7.5-7-5z"/><path d="M12 7c0-2 1-3.2 2.5-4"/>',
+  health: '<rect x="3.5" y="5" width="17" height="14" rx="2.5"/><path d="M12 8.5v7M8.5 12h7"/>',
+  transit: '<rect x="4.5" y="3.5" width="15" height="14" rx="2.5"/><path d="M4.5 10.5h15M8 20v-2.5M16 20v-2.5"/>',
+  library: '<path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v15H5.5A1.5 1.5 0 0 0 4 20.5v-15z"/><path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v15h5.5a1.5 1.5 0 0 1 1.5 1.5v-15z"/>',
+}
+
+function ProposedLayer({ proposed, onSiteClick }: { proposed: ProposedSite[]; onSiteClick?: (i: number) => void }) {
   const map = useMap()
+  const click = useRef(onSiteClick)
+  useLayoutEffect(() => {
+    click.current = onSiteClick
+  })
   useEffect(() => {
     const items: L.Layer[] = []
-    for (const s of proposed) {
+    proposed.forEach((s, i) => {
       if (s.radiusMi > 0)
         items.push(
-        L.circle([s.lat, s.lon], {
-          pane: 'reach',
-          radius: s.radiusMi * MILE,
-          color: s.color,
-          weight: 2,
-          dashArray: '6 5',
-          fillColor: s.color,
-          fillOpacity: 0.08,
-          interactive: false,
-        }),
-      )
+          L.circle([s.lat, s.lon], { pane: 'reach', radius: s.radiusMi * MILE, color: s.color, weight: 2, dashArray: '6 5', fillColor: s.color, fillOpacity: 0.08, interactive: false }),
+        )
+      const glyph = s.cat
+        ? `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${PIN_ICON[s.cat]}</svg>`
+        : ''
+      const size = s.active ? 54 : 44
       items.push(
         L.marker([s.lat, s.lon], {
           pane: 'proposed',
-          icon: L.divIcon({ className: 'site-pin', html: `<span style="background:${s.color}">${s.label}</span>`, iconSize: [28, 28], iconAnchor: [14, 14] }),
-        }).bindTooltip(s.title, { direction: 'top', offset: [0, -14] }),
+          icon: L.divIcon({
+            className: `site-pin2 ${s.active ? 'active' : ''}`,
+            html: `<div class="sp" style="background:${s.color}">${glyph}<b>${s.label}</b></div>`,
+            iconSize: [size, size],
+            iconAnchor: [size / 2, size / 2],
+          }),
+        })
+          .bindTooltip(s.title, { direction: 'top', offset: [0, -size / 2] })
+          .on('click', () => click.current?.(i)),
       )
-    }
+    })
     const group = L.layerGroup(items).addTo(map)
     return () => {
       group.remove()
@@ -149,10 +165,32 @@ function ProposedLayer({ proposed }: { proposed: ProposedSite[] }) {
   return null
 }
 
+// Covers everything outside North Carolina so only the state being analyzed is visible.
+function NCMask() {
+  const map = useMap()
+  useEffect(() => {
+    let layer: L.Polygon | null = null
+    fetch(`${import.meta.env.BASE_URL}data/nc_outline.geojson`)
+      .then((r) => r.json())
+      .then((fc) => {
+        const g = fc.features[0].geometry
+        const polys: number[][][][] = g.type === 'Polygon' ? [g.coordinates] : g.coordinates
+        const holes = polys.map((poly) => poly[0].map(([x, y]) => [y, x] as [number, number]))
+        const world: [number, number][] = [[-89, -179], [-89, 179], [89, 179], [89, -179]]
+        layer = L.polygon([world, ...holes], { pane: 'mask', stroke: false, fillColor: '#f4f2ee', fillOpacity: 1, interactive: false }).addTo(map)
+        L.polygon(holes, { pane: 'mask', color: '#8a857a', weight: 1.2, fill: false, interactive: false }).addTo(map)
+      })
+    return () => {
+      layer?.remove()
+    }
+  }, [map])
+  return null
+}
+
 function Focus({ focus }: { focus: Props['focus'] }) {
   const map = useMap()
   useEffect(() => {
-    map.fitBounds(focus.bounds, { padding: [40, 40], maxZoom: 12 })
+    map.fitBounds(focus.bounds, { paddingTopLeft: focus.padding ?? [40, 40], paddingBottomRight: [30, 30], maxZoom: 12 })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, focus.key])
   return null
@@ -160,15 +198,27 @@ function Focus({ focus }: { focus: Props['focus'] }) {
 
 export default function MapView(props: Props) {
   return (
-    <MapContainer className="map" center={[35.95, -78.9]} zoom={10} zoomControl={true} preferCanvas={true} minZoom={6}>
+    <MapContainer
+      className="map"
+      bounds={NC_BOUNDS}
+      boundsOptions={{ padding: [20, 20] }}
+      maxBounds={[[32.5, -86.5], [37.8, -73.5]]}
+      zoomControl={false}
+      preferCanvas={true}
+      minZoom={6}
+      zoomSnap={0.25}
+    >
       <TileLayer url={`${ESRI}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`} attribution={ATTRIBUTION} maxZoom={16} />
       <Choropleth data={props.tracts} fill={props.fill} tooltip={props.tooltip} selected={props.selected} onSelect={props.onSelect} />
       <Pane name="labels" style={{ zIndex: 450, pointerEvents: 'none' }}>
         <TileLayer url={`${ESRI}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`} maxZoom={16} />
       </Pane>
+      <ZoomControl position="bottomright" />
+      <Pane name="mask" style={{ zIndex: 460, pointerEvents: 'none' }} />
+      <NCMask />
       <Pane name="reach" style={{ zIndex: 500, pointerEvents: 'none' }} />
       <Pane name="proposed" style={{ zIndex: 640 }} />
-      <ProposedLayer proposed={props.proposed} />
+      <ProposedLayer proposed={props.proposed} onSiteClick={props.onSiteClick} />
       <FacilityLayer facilities={props.facilities} />
       <Focus focus={props.focus} />
     </MapContainer>

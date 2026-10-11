@@ -1,10 +1,10 @@
-# AccessAtlas
+# Allocate NC
 
 **Mapping community needs. Connecting people to resources.**
 
 Public data on poverty, transportation and essential services exists, but it's hard for nonprofits and local
 planners to read — and knowing *where* need is doesn't tell you *what to build* or *where to put it*.
-AccessAtlas turns public tract-level data for all of North Carolina into two maps and a planning tool:
+Allocate NC turns public tract-level data for all of North Carolina into two maps and a planning tool:
 
 1. **Economic Hardship**: where economic disadvantage is concentrated (PCA-based index, statewide).
 2. **Service Access**: how close residents live to food assistance, community health centers, transit and
@@ -57,11 +57,6 @@ A_i is ranked against all populated NC tracts at baseline (ties split evenly) �
 separate county or urban/rural rankings. 10 means better access than only 10% of NC neighborhoods. Before/after
 comparisons rank against the same baseline. Equal weights are a transparent modeling choice.
 
-**Modeled food sites.** No statewide food-pantry inventory exists in this project. Durham, Orange, Wake (2018
-directory) and New Hanover use real site lists. In every other county, food sites are *modeled*: one site per
-~5,000 residents (the density of Durham and Orange's current inventories), each placed at a random point inside
-a tract chosen in proportion to population (fixed seed). Modeled sites appear as hollow markers, and food scores
-outside the four inventory counties — including their county reference *m* — are estimates, not observations.
 
 ### Finding the best improvements
 The planner evaluates every allowed service type *c* (all four by default, or any subset) at candidate
@@ -116,6 +111,7 @@ python3 -m venv .venv
 .venv/bin/python scripts/fetch_transit.py      # transit stops (once)
 .venv/bin/python scripts/build_data.py         # statewide hardship index
 .venv/bin/python scripts/build_access.py       # statewide service access + recommendations (several minutes)
+.venv/bin/python scripts/build_story.py        # landing-page story data
 ```
 
 ## Deploy
@@ -124,8 +120,6 @@ The site is static. On Vercel, set **Root Directory** to `web`; `web/vercel.json
 
 ## Limitations
 - Distances are straight-line, not walking or driving routes; residents are assumed evenly spread within a tract.
-- Food-assistance sites outside Durham, Orange, Wake and New Hanover are modeled, not real locations; Wake's list
-  dates from 2018. Three Orange County addresses could not be geocoded and are omitted.
 - Facility lists may be incomplete or out of date; a missing record is not proof a service doesn't exist.
 - Transit stops say nothing about service frequency.
 - Poverty rates in some tracts near universities likely include students; the index does not adjust for this.

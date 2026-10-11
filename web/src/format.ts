@@ -1,9 +1,9 @@
-// "37063001505" → "Tract 15.05"; "37063000200" → "Tract 2"
+// "37063001505" → "Neighborhood 15.05"; "37063000200" → "Neighborhood 2" (the census tract number)
 export function tractName(geoid: string): string {
   const ce = geoid.slice(5)
   const base = String(parseInt(ce.slice(0, 4), 10))
   const suffix = ce.slice(4)
-  return `Tract ${suffix === '00' ? base : `${base}.${suffix}`}`
+  return `Neighborhood ${suffix === '00' ? base : `${base}.${suffix}`}`
 }
 
 export const fmtInt = (v: number) => Math.round(v).toLocaleString('en-US')
