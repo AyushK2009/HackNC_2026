@@ -4,17 +4,6 @@ import { fmtDateTime, fmtMoney, fmtNeed, fmtNum, KIND_ORDER, KIND_SHORT, type Sa
 
 export const COMPARE_COLOR = { a: '#18191b', b: '#0f766e' }
 
-type Props = {
-  scenarios: SavedScenario[]
-  a: string | null
-  b: string | null
-  setA: (id: string) => void
-  setB: (id: string) => void
-  onOpen: (id: string) => void
-  onDelete: (id: string) => void
-  onNew: () => void
-}
-
 type Better = 'higher' | 'lower' | null
 
 function stats(s: SavedScenario) {
@@ -51,56 +40,75 @@ function Row({ label, hint, a, b, va, vb, better }: { label: string; hint?: stri
         {label}
         {hint && <span>{hint}</span>}
       </div>
-      <div className={`pl-cmp-cell ${w === 'a' ? 'win' : ''}`}>{a}{w === 'a' && <em>Better</em>}</div>
-      <div className={`pl-cmp-cell ${w === 'b' ? 'win' : ''}`}>{b}{w === 'b' && <em>Better</em>}</div>
+      <div className={`pl-cmp-cell ${w === 'a' ? 'win' : ''}`}><span>{a}</span>{w === 'a' && <em>Better</em>}</div>
+      <div className={`pl-cmp-cell ${w === 'b' ? 'win' : ''}`}><span>{b}</span>{w === 'b' && <em>Better</em>}</div>
     </div>
   )
 }
 
-export default function Compare(p: Props) {
-  const A = p.scenarios.find((s) => s.id === p.a) ?? null
-  const B = p.scenarios.find((s) => s.id === p.b) ?? null
+type ListProps = {
+  scenarios: SavedScenario[]
+  picked: string[]
+  currentId: string | null
+  onPick: (id: string) => void
+  onOpen: (id: string) => void
+  onDelete: (id: string) => void
+  onCompare: () => void
+  onClose: () => void
+}
 
+// Drawer listing every saved plan. Tick two to compare them.
+export default function SavedPlans(p: ListProps) {
   return (
-    <div className="pl-compare">
-      <div className="pl-head">
-        <p className="pl-kicker">Compare plans</p>
-        <h2>Which plan does more?</h2>
-        <p className="pl-lead">Every plan you run is saved here. Pick two to see them side by side.</p>
-      </div>
-
-      {p.scenarios.length === 0 && (
-        <div className="pl-empty">
-          No plans yet. Run one, then try a variation — a smaller budget, more volunteers, or only short-term actions.
-          <button className="pl-btn" onClick={p.onNew}>Start a plan</button>
-        </div>
-      )}
-
-      {p.scenarios.length > 0 && (
-        <ul className="pl-saved">
-          {p.scenarios.map((s) => (
-            <li key={s.id} className={s.id === p.a ? 'is-a' : s.id === p.b ? 'is-b' : ''}>
-              <div className="pl-saved-pick">
-                <button className={s.id === p.a ? 'on a' : ''} onClick={() => p.setA(s.id)} title="Compare as plan A">A</button>
-                <button className={s.id === p.b ? 'on b' : ''} onClick={() => p.setB(s.id)} title="Compare as plan B">B</button>
-              </div>
-              <div className="pl-saved-body">
-                <b>{s.name}</b>
-                <span>{s.params.scopeName} · {fmtMoney(s.params.budget)} · {fmtNum(s.result.totals.people_reached)} people · {fmtDateTime(s.at)}</span>
-              </div>
-              <div className="pl-saved-actions">
-                <button onClick={() => p.onOpen(s.id)}>Open</button>
+    <div className="pp-overlay" onMouseDown={(e) => e.target === e.currentTarget && p.onClose()}>
+      <aside className="pp-saved" aria-label="Saved plans">
+        <header>
+          <div>
+            <h2>Saved plans</h2>
+            <p>Every plan you build is kept in this browser. Tick two to compare.</p>
+          </div>
+          <button className="pl-x big" aria-label="Close" onClick={p.onClose}>×</button>
+        </header>
+        {p.scenarios.length === 0 && <div className="pl-empty">No plans yet. Build one, then try a variation, like a smaller budget or more volunteer hours.</div>}
+        <ul>
+          {p.scenarios.map((s) => {
+            const i = p.picked.indexOf(s.id)
+            const tag = i === 0 ? 'A' : i === 1 ? 'B' : null
+            return (
+              <li key={s.id} className={`${tag ? 'picked' : ''} ${s.id === p.currentId ? 'current' : ''}`}>
+                <button className={`pp-pick ${tag ? 'on' : ''}`} style={tag ? { background: tag === 'A' ? COMPARE_COLOR.a : COMPARE_COLOR.b } : undefined} onClick={() => p.onPick(s.id)} aria-pressed={!!tag} title="Pick to compare">
+                  {tag ?? ''}
+                </button>
+                <div className="pp-saved-body">
+                  <b>{s.name}</b>
+                  <span>{s.params.scopeName} · {fmtMoney(s.params.budget)} · {fmtNum(s.result.totals.people_reached)} people · {fmtDateTime(s.at)}</span>
+                </div>
+                <button className="pl-btn small ghost" onClick={() => p.onOpen(s.id)}>{s.id === p.currentId ? 'Showing' : 'Open'}</button>
                 <button className="pl-x" aria-label="Delete plan" onClick={() => p.onDelete(s.id)}>×</button>
-              </div>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
-      )}
+        <footer>
+          <button className="pl-btn" disabled={p.picked.length < 2} onClick={p.onCompare}>
+            {p.picked.length < 2 ? `Pick ${2 - p.picked.length} more to compare` : 'Compare these two'}
+          </button>
+        </footer>
+      </aside>
+    </div>
+  )
+}
 
-      {p.scenarios.length === 1 && <p className="pl-hint">Run one more plan to compare. Try changing the budget or turning off the lasting builds.</p>}
-
-      {A && B && A.id !== B.id && <Table A={A} B={B} />}
-      {A && B && A.id === B.id && <p className="pl-hint">Pick two different plans.</p>}
+export function CompareModal({ A, B, onClose }: { A: SavedScenario; B: SavedScenario; onClose: () => void }) {
+  return (
+    <div className="pp-overlay center" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="pp-modal" role="dialog" aria-label="Compare plans">
+        <header>
+          <h2>Which plan does more?</h2>
+          <button className="pl-x big" aria-label="Close" onClick={onClose}>×</button>
+        </header>
+        <Table A={A} B={B} />
+      </div>
     </div>
   )
 }

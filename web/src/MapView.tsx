@@ -61,20 +61,25 @@ type Props = {
   onSiteClick?: (i: number) => void
   markers?: MapMarker[]
   focus: { key: string; bounds: L.LatLngBoundsExpression; padding?: [number, number]; paddingBR?: [number, number] }
+  // Optional: areas outside the current focus are drawn faintly.
+  fade?: (p: TractProps) => boolean
+  // Optional: told the zoom level after every zoom (and once on load).
+  onZoom?: (zoom: number) => void
 }
 
 // Tract choropleth drawn imperatively so restyling 2,600+ polygons doesn't rebuild the layer.
-function Choropleth({ data, fill, tooltip, selected, onSelect }: Pick<Props, 'fill' | 'tooltip' | 'selected' | 'onSelect'> & { data: Props['tracts'] }) {
+function Choropleth({ data, fill, tooltip, selected, onSelect, fade }: Pick<Props, 'fill' | 'tooltip' | 'selected' | 'onSelect' | 'fade'> & { data: Props['tracts'] }) {
   const map = useMap()
   const layer = useRef<L.GeoJSON | null>(null)
   const style = (p: TractProps): L.PathOptions => {
     const c = fill(p)
     const isSel = p.geoid === selected
+    const faded = !isSel && !!fade?.(p)
     return {
       fillColor: c ?? '#d9d8d3',
-      fillOpacity: c ? 0.8 : 0.35,
+      fillOpacity: faded ? (c ? 0.14 : 0.08) : c ? 0.8 : 0.35,
       color: isSel ? '#111111' : '#ffffff',
-      weight: isSel ? 2.5 : 0.5,
+      weight: isSel ? 2.5 : faded ? 0.25 : 0.5,
       dashArray: c ? undefined : '2 3',
     }
   }
@@ -233,6 +238,23 @@ function Focus({ focus }: { focus: Props['focus'] }) {
   return null
 }
 
+function ZoomWatch({ onZoom }: { onZoom: (zoom: number) => void }) {
+  const map = useMap()
+  const cb = useRef(onZoom)
+  useLayoutEffect(() => {
+    cb.current = onZoom
+  })
+  useEffect(() => {
+    const on = () => cb.current(map.getZoom())
+    on()
+    map.on('zoomend', on)
+    return () => {
+      map.off('zoomend', on)
+    }
+  }, [map])
+  return null
+}
+
 const EMPTY_P: ProposedSite[] = []
 const EMPTY_F: Feature<Point, FacilityProps>[] = []
 const EMPTY_M: MapMarker[] = []
@@ -250,7 +272,7 @@ export default function MapView(props: Props) {
       zoomSnap={0.25}
     >
       <TileLayer url={`${ESRI}/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}`} attribution={ATTRIBUTION} maxZoom={16} />
-      <Choropleth data={props.tracts} fill={props.fill} tooltip={props.tooltip} selected={props.selected} onSelect={props.onSelect} />
+      <Choropleth data={props.tracts} fill={props.fill} tooltip={props.tooltip} selected={props.selected} onSelect={props.onSelect} fade={props.fade} />
       <Pane name="labels" style={{ zIndex: 450, pointerEvents: 'none' }}>
         <TileLayer url={`${ESRI}/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}`} maxZoom={16} />
       </Pane>
@@ -264,6 +286,7 @@ export default function MapView(props: Props) {
       <FacilityLayer facilities={props.facilities ?? EMPTY_F} />
       <MarkerLayer markers={props.markers ?? EMPTY_M} />
       <Focus focus={props.focus} />
+      {props.onZoom && <ZoomWatch onZoom={props.onZoom} />}
     </MapContainer>
   )
 }

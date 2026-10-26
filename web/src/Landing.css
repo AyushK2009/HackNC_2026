@@ -104,3 +104,15 @@
 .lp-loop-steps p { margin: 0; font-size: 0.92rem; line-height: 1.5; color: var(--ink-2); flex: 1; }
 .lp-loop-steps button { align-self: flex-start; border: none; background: none; padding: 0; font-weight: 600; font-size: 0.92rem; color: var(--accent); }
 @media (max-width: 1000px) { .lp-loop-steps { grid-template-columns: 1fr 1fr; } .lp-loop-steps li::after { display: none; } }
+.lp-nav-link { border: none; background: none; font-size: 16px; font-weight: 600; color: var(--ink); padding: 10px 4px; }
+.lp-nav-link:hover { color: var(--accent); }
+.lp-actions { flex-direction: column; align-items: flex-start; gap: 16px; }
+.lp-start { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.lp-start-picker { width: 270px; }
+.lp-start-picker.cbx .cbx-control { height: 56px; border-radius: 999px; padding-left: 22px; border-color: var(--ink); background: #fff; }
+.lp-start .lp-button { height: 56px; padding: 0 28px; }
+.lp-alt { font-size: 16px; color: var(--ink-2); display: flex; gap: 28px; align-items: baseline; flex-wrap: wrap; }
+.lp-alt a { color: var(--ink); font-weight: 600; }
+.lp-alt .lp-scroll-cue { font-size: 16px; }
+.lp-cta .lp-start { justify-content: center; }
+.lp-cta .cbx-list { text-align: left; }

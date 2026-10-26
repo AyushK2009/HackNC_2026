@@ -3,8 +3,10 @@ import L from 'leaflet'
 import MapView, { NC_BOUNDS } from '../MapView'
 import { api, CATEGORIES, CATEGORY_LABEL, modelEvents, type Category, type Extraction, type NeedChange, type Report as ReportT } from '../shared/api'
 import { useBaseData } from '../shared/baseData'
+import Combobox from '../shared/Combobox'
+import { getPlace } from '../shared/place'
 import type { TractProps } from '../metrics'
-import { BARRIERS, CatDot, catColor, CATEGORY_NOUN, countyBounds, countyNameOf, fipsOf, GROUPS, nearestTract, normalizeExtraction, needPctScale, r0, useHashParams } from './common'
+import { BARRIERS, CatDot, catColor, CATEGORY_NOUN, countyBounds, countyCenter, countyNameOf, fipsOf, GROUPS, nearestTract, normalizeExtraction, needPctScale, r0, useHashParams } from './common'
 
 const EXAMPLES = [
   "Since the 12 bus was cut, my mom can't get to her dialysis appointments anymore.",
@@ -42,12 +44,28 @@ export default function Report() {
     setCounty(fipsOf(g))
   }
 
+  // Jump to a county: drop the pin at its center so the report can be sent right away.
+  const goCounty = (f: string) => {
+    if (!base) return
+    setCounty(f)
+    setGeoid(null)
+    setPoint(f ? countyCenter(base, f) : null)
+    const b = f ? countyBounds(base, f) : null
+    setFocus(b ? { key: `c-${f}-${Date.now()}`, bounds: b, padding: [20, 20] } : { key: `nc-${Date.now()}`, bounds: NC_BOUNDS, padding: [20, 20] })
+  }
+
+  // '#/report?geoid=…' picks that neighborhood; otherwise start from the county chosen elsewhere in the app.
   const qGeoid = params.get('geoid')
   useEffect(() => {
-    if (!base || !qGeoid || !base.byId.has(qGeoid)) return
-    pick(qGeoid)
-    const b = countyBounds(base, fipsOf(qGeoid))
-    if (b) setFocus({ key: `q-${qGeoid}`, bounds: b, padding: [20, 20] })
+    if (!base) return
+    if (qGeoid && base.byId.has(qGeoid)) {
+      pick(qGeoid)
+      const b = countyBounds(base, fipsOf(qGeoid))
+      if (b) setFocus({ key: `q-${qGeoid}`, bounds: b, padding: [20, 20] })
+      return
+    }
+    const pl = getPlace()
+    if (pl && !point) goCounty(pl.fips)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [base, qGeoid])
 
@@ -133,7 +151,10 @@ export default function Report() {
     setEdited(false)
   }
 
-  const counties = base?.access.counties ?? []
+  const countyOptions = useMemo(
+    () => [...(base?.access.counties ?? [])].sort((a, b) => a.name.localeCompare(b.name)).map((c) => ({ value: c.fips, label: c.name })),
+    [base],
+  )
   const fips = geoid ? fipsOf(geoid) : county
   const fill = useMemo(
     () => (p: TractProps) => (p.geoid === geoid ? '#e2513c' : fips && fipsOf(p.geoid) === fips ? '#f4cfc4' : '#ebe8e2'),
@@ -185,22 +206,12 @@ export default function Report() {
                 <p className="cm-muted small">Click the map to pick the neighborhood, or jump to a county.</p>
               </div>
               <div className="cm-loc-tools">
-                <select
-                  value={fips}
-                  onChange={(e) => {
-                    const f = e.target.value
-                    setCounty(f)
-                    setGeoid(null)
-                    setPoint(null)
-                    const b = f ? countyBounds(base, f) : null
-                    setFocus(b ? { key: `c-${f}-${Date.now()}`, bounds: b, padding: [20, 20] } : { key: `nc-${Date.now()}`, bounds: NC_BOUNDS, padding: [20, 20] })
-                  }}
-                >
-                  <option value="">Choose a county…</option>
-                  {counties.map((c) => (
-                    <option key={c.fips} value={c.fips}>{c.name}</option>
-                  ))}
-                </select>
+                <Combobox
+                  options={countyOptions}
+                  value={fips || null}
+                  onChange={goCounty}
+                  placeholder="Type a county"
+                />
                 <button className="cm-btn small" onClick={useMyLocation}>Use my location</button>
               </div>
             </div>
@@ -215,8 +226,8 @@ export default function Report() {
                 markers={pin}
               />
             </div>
-            <p className={`cm-loc-chosen ${geoid ? 'ok' : ''}`}>
-              {locMsg ?? (placeName ? <>✓ A neighborhood in <b>{placeName}</b></> : 'No neighborhood chosen yet')}
+            <p className={`cm-loc-chosen ${geoid || point ? 'ok' : ''}`}>
+              {locMsg ?? (placeName ? <>✓ A neighborhood in <b>{placeName}</b></> : point && county ? <>✓ Somewhere in <b>{countyNameOf(base, `37${county}000000`)}</b> · click the map to pin the exact neighborhood</> : 'No neighborhood chosen yet')}
             </p>
           </div>
         </section>
@@ -363,7 +374,7 @@ function Success({ done, county, onAgain }: { done: { report: ReportT; change: N
         <p className="cm-muted">Planners and nonprofits see this right away. If neighbors say "me too", it counts even more.</p>
         <div className="cm-actions center">
           <a className="cm-btn primary big" href={`#/map?geoid=${g}`}>See it on the map</a>
-          <a className="cm-btn big" href={`#/involved?geoid=${g}`}>Find ways to help nearby</a>
+          <a className="cm-btn big" href={`#/involved?geoid=${g}`}>Ways to help nearby</a>
           <button className="cm-btn ghost" onClick={onAgain}>Report something else</button>
         </div>
       </div>

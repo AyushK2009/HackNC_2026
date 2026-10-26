@@ -2,7 +2,22 @@ import { useEffect, useRef, useState } from 'react'
 import { SERVICE_COLORS, SEVERITY, type ServiceKey } from './metrics'
 import { fmtInt } from './format'
 import HeroArt from './HeroArt'
+import PlacePicker from './shared/PlacePicker'
+import { usePlace, shortCounty } from './shared/place'
 import './Landing.css'
+
+// The one way in: pick your county, then open the app already focused there.
+function CountyStart({ onGo }: { onGo: () => void }) {
+  const [place] = usePlace()
+  return (
+    <div className="lp-start">
+      <PlacePicker size="lg" className="lp-start-picker" allowState={false} placeholder="Type your county" />
+      <button className="lp-button" onClick={onGo}>
+        {place ? `See what ${shortCounty(place.name)} needs →` : 'See what your county needs →'}
+      </button>
+    </div>
+  )
+}
 
 type Dot = [number, number, number | null, number | null, boolean] // x, y, hardship pct, access pct, in showcase county
 type Story = {
@@ -106,7 +121,7 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
           <Logo size={34} />
           <span>Allocate <b>NC</b></span>
         </div>
-        <button className="lp-nav-button" onClick={onExplore}>Open Allocate NC →</button>
+        <button className="lp-nav-link" onClick={() => document.querySelector('.lp-loop')?.scrollIntoView({ behavior: 'smooth' })}>How it works</button>
       </header>
 
       <section className="lp-hero">
@@ -123,9 +138,11 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
             neighbors who have been farthest from it.
           </p>
           <div className="lp-actions">
-            <button className="lp-button" onClick={onExplore}>Open the map →</button>
-            <button className="lp-button ghost" onClick={() => (window.location.hash = '/report')}>Report a need</button>
-            <span className="lp-scroll-cue">Scroll to see the problem ↓</span>
+            <CountyStart onGo={onExplore} />
+            <div className="lp-alt">
+              <span>Or <a href="#/report">report a need</a> right now.</span>
+              <span className="lp-scroll-cue">Scroll to see the problem ↓</span>
+            </div>
           </div>
         </div>
         <figure className="lp-photo">
@@ -234,7 +251,7 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
       <section className="lp-loop">
         <p className="lp-eyebrow">One shared picture, four ways in</p>
         <h2>Residents, volunteers and planners all work from the same map.</h2>
-        <button className="lp-button" onClick={() => (window.location.hash = '/tour')}>▶ Watch the whole loop, live</button>
+        <button className="lp-button" onClick={() => (window.location.hash = '/tour')}>Follow one report through, live</button>
         <ol className="lp-loop-steps">
           <li>
             <b>1</b>
@@ -246,24 +263,25 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
             <b>2</b>
             <h3>The map learns</h3>
             <p>Public data sets the starting point. Recent, specific, confirmed reports raise the need estimate where they happen.</p>
-            <button onClick={() => (window.location.hash = '/map')}>See the Needs Map →</button>
+            <button onClick={() => (window.location.hash = '/map')}>See the needs map →</button>
           </li>
           <li>
             <b>3</b>
             <h3>Planners decide</h3>
             <p>Set a budget and volunteer hours. Allocate NC picks the mix of projects and places that helps the most people.</p>
-            <button onClick={() => (window.location.hash = '/plan')}>Plan &amp; track →</button>
+            <button onClick={() => (window.location.hash = '/plan')}>Plan services →</button>
           </li>
           <li>
             <b>4</b>
             <h3>Neighbors pitch in</h3>
             <p>Volunteers see the opportunities where they're needed most and that fit their skills and time.</p>
-            <button onClick={() => (window.location.hash = '/involved')}>Get involved →</button>
+            <button onClick={() => (window.location.hash = '/involved')}>Volunteer →</button>
           </li>
           <li>
             <b>5</b>
             <h3>Results feed back</h3>
             <p>When a project is finished, need falls on the map where it reaches, and the next plan starts from there.</p>
+            <button onClick={() => (window.location.hash = '/projects')}>Projects →</button>
           </li>
         </ol>
       </section>
@@ -271,7 +289,7 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
       <section className="lp-cta">
         <h2>Start with your county.</h2>
         <p>Every neighborhood in North Carolina, one shared picture of what's missing, and a plan for what to do about it.</p>
-        <button className="lp-button" onClick={onExplore}>Open Allocate NC →</button>
+        <CountyStart onGo={onExplore} />
         <p className="lp-sources">
           Data: USDA Economic Research Service, U.S. Census Bureau, HRSA, U.S. Department of Transportation, Institute of
           Museum and Library Services, and county food-assistance lists.

@@ -7,13 +7,17 @@ Volunteers are matched to where they're needed most. Nonprofits and planners tur
 optimized, trackable projects — and when a project is finished, need falls on the map where it reaches.
 
 ## What's in the app
+Pick your county once (top bar, or the start box on the landing page) and every page starts there.
+
 | Section | Who it's for | What you can do |
 |---|---|---|
-| **Needs Map** (`#/map`) | Everyone | See community need for every NC neighborhood across six kinds of need (food, health care, transportation, internet & library, housing, childcare), switch to the hardship or service-access lenses, read resident reports, and open any neighborhood to see *why* it's underserved and what would help. |
+| **Home** (`#/home`) | Everyone | Your county at a glance: its biggest needs against the state average, the neighborhoods with the most need, the latest reports, sign-ups and projects there, and a starting point for each task. |
+| **Needs map** (`#/map`) | Everyone | Community need for every NC neighborhood across six kinds of need (food, health care, transportation, internet & library, housing, childcare). A legend explains each layer; open any neighborhood to see *why* it's underserved, read and confirm resident reports, and jump straight to reporting, volunteering or planning there. |
 | **Report a need** (`#/report`) | Residents | Write a problem in plain words; the system extracts the kind of need, barriers, who's affected, seriousness and urgency (editable), pins it to a neighborhood and shows how the estimate changed. Neighbors can confirm reports ("me too"). |
-| **Get involved** (`#/involved`) | Volunteers | Set skills, causes, time and distance; get opportunities ranked by how much need there is where they happen, fit, distance and time, with the reason for each match; sign up and fill real project roles. |
-| **Plan & track** (`#/plan`) | Nonprofits, planners | Set an area, budget, volunteer hours and allowed actions (permanent facilities, mobile and pop-up services, programs, events, or your own idea in plain words); an integer program picks the best portfolio; compare scenarios; turn items into projects with milestones, volunteer roles, optimal staffing and an auto-written project brief; mark complete to update the map. |
-| **Watch the loop** (`#/tour`) | Demo | A live, five-step run of the whole cycle: report → model update → plan → staffed project → completion. |
+| **Volunteer** (`#/involved`) | Volunteers | Say where you are, what you care about and how much time you have; get opportunities ranked by how much need there is where they happen, fit, distance and time, with the reason for each match; sign up and fill real project roles. |
+| **Plan services** (`#/plan`) | Nonprofits, planners | A three-step builder (where, resources, kinds of help) with sensible defaults. An integer program picks the best mix of permanent facilities, mobile and pop-up services, programs, events, or your own idea in plain words. See where each action goes, how need changes, and compare saved plans. |
+| **Projects** (`#/projects`) | Nonprofits, planners | A board from proposed to complete: milestones, volunteer roles, optimal staffing, an auto-written project brief, and completion that lowers need on the map. |
+| **Walkthrough** (`#/tour`) | Anyone new | A live, five-step run of the whole cycle in Durham County: report → need rises → plan → staffed project → need falls. |
 
 ## Run locally
 ```bash

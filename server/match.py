@@ -10,7 +10,7 @@ from .needs import CATS, LABELS, PHRASE, iso, now_utc
 from .projects import fill_role_for, public, skill_fit
 
 _vec_cache: dict = {"key": None}
-REMOTE_DISTANCE = 0.75  # remote roles help, but hands-on local work near you ranks a bit higher
+REMOTE_DISTANCE = 0.45  # remote roles help, but hands-on work within ~10 mi of you ranks higher
 REL_SCALE = 0.4  # short queries give small cosines; a cosine of 0.4 already means a strong match
 
 

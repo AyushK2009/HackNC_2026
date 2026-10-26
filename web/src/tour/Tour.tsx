@@ -179,7 +179,7 @@ export default function Tour() {
   }
 
   const STEPS = [
-    { title: 'The whole loop, live', sub: 'Five steps, all real: each one changes the same shared model.' },
+    { title: 'From one report to a finished project', sub: 'Five live steps in Durham County. Each one changes the same map everyone uses.' },
     { title: '1 · A resident reports a problem', sub: `A neighbor in ${COUNTY_NAME} describes, in their own words, what's hard to reach.` },
     { title: '2 · The map learns', sub: 'The report is read, pinned to the neighborhood, and weighed as evidence.' },
     { title: '3 · A planner builds a plan', sub: 'With $400k and 600 volunteer hours a month, Allocate NC picks the mix that helps most.' },
@@ -320,7 +320,8 @@ export default function Tour() {
             </div>
             <p className="tour-sub">The next resident report, plan, or volunteer search starts from this updated picture.</p>
             <div className="tour-row">
-              <button className="tour-btn ghost" onClick={() => (window.location.hash = '/map')}>Explore the Needs Map</button>
+              <button className="tour-btn ghost" onClick={() => (window.location.hash = '/map')}>See it on the needs map</button>
+              <button className="tour-btn ghost" onClick={() => (window.location.hash = project ? `/projects?id=${project.id}` : '/projects')}>Open the project</button>
               <button className="tour-btn ghost" disabled={busy} onClick={restart}>Reset demo data</button>
             </div>
           </>

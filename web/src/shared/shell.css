@@ -45,3 +45,7 @@
 .mk:hover { transform: scale(1.15); }
 .shell-tour { text-decoration: none; font-size: 13.5px; font-weight: 700; color: var(--accent); padding: 8px 12px; border-radius: 999px; }
 .shell-tour:hover, .shell-tour.on { background: #fdf1ee; }
+.shell-place { width: 290px; }
+.shell-place .cbx-control { height: 36px; background: var(--bg); border-color: transparent; }
+.shell-place.open .cbx-control, .shell-place .cbx-control:focus-within { background: var(--card); border-color: var(--ink); }
+.shell-nav a { white-space: nowrap; }

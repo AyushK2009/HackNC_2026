@@ -1,21 +1,17 @@
-import { useEffect } from 'react'
+import type { ReactNode } from 'react'
 import { CATEGORIES, CATEGORY_COLOR, CATEGORY_LABEL, type Category, type PortfolioItem, type Project } from '../shared/api'
 import { tractName } from '../format'
 import { fmtMoney, fmtNeed, fmtNum, type SavedScenario } from './util'
 
 type Props = {
   sc: SavedScenario
+  map: ReactNode
   highlight: string | null
   onHighlight: (id: string | null) => void
   projectFor: (item: PortfolioItem) => Project | undefined
   creating: Set<string>
   onCreate: (item: PortfolioItem) => void
   onCreateAll: () => void
-  onOpenProject: (id: string) => void
-  onEdit: () => void
-  onOpenBoard: () => void
-  onCompare: () => void
-  canCompare: boolean
   createErr: string | null
 }
 
@@ -58,24 +54,12 @@ export default function Results(p: Props) {
   const t = result.totals
   const drop = t.need_before - t.need_after
   const pending = result.portfolio.filter((i) => !p.projectFor(i))
+  const made = result.portfolio.length - pending.length
   const busyAll = pending.length > 0 && pending.every((i) => p.creating.has(i.id))
 
-  // Clicking a pin on the map brings its row into view.
-  useEffect(() => {
-    if (p.highlight) document.querySelector(`[data-item="${CSS.escape(p.highlight)}"]`)?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
-  }, [p.highlight])
-
   return (
-    <div className="pl-results">
-      <div className="pl-query">
-        <div>
-          <b>{result.name || p.sc.name}</b>
-          <span>{params.scopeName} · {fmtMoney(params.budget)} · {fmtNum(params.volunteers)} volunteer hrs/mo</span>
-        </div>
-        <button onClick={p.onEdit}>Change</button>
-      </div>
-
-      <div className="pl-tiles">
+    <div className="pp-results">
+      <div className="pp-tiles">
         <div className="pl-tile">
           <span>Budget used</span>
           <b>{fmtMoney(t.cost)}</b>
@@ -98,7 +82,7 @@ export default function Results(p: Props) {
             <>
               <span>Need where the plan reaches</span>
               <b>{fmtNeed(t.reached_before)} → {fmtNeed(t.reached_after)}</b>
-              <em>across {fmtNum(t.neighborhoods_improved ?? 0)} neighborhoods · county {fmtNeed(t.need_before)} → {fmtNeed(t.need_after)}</em>
+              <em>across {fmtNum(t.neighborhoods_improved ?? 0)} neighborhood{(t.neighborhoods_improved ?? 0) === 1 ? '' : 's'} · whole area {fmtNeed(t.need_before)} → {fmtNeed(t.need_after)}</em>
             </>
           ) : (
             <>
@@ -117,67 +101,72 @@ export default function Results(p: Props) {
         <p className="pl-insight">Not every dollar was needed: more spending here would add little. Try a wider area or allow more of each option.</p>
       )}
 
-      <h3 className="pl-h3">Need by kind, today → with this plan</h3>
-      <CategoryBars by={t.by_category} />
+      <div className="pp-split">
+        <section className="pp-card pp-mapcard">{p.map}</section>
+        <section className="pp-card">
+          <h3 className="pp-h">Need by kind</h3>
+          <p className="pp-cap">Today (faded) and with this plan (solid), across {params.scopeName}.</p>
+          <CategoryBars by={t.by_category} />
+          <p className="pp-solver">{solverLine(result.solver)}</p>
+        </section>
+      </div>
 
-      <p className="pl-solver">
-        <span aria-hidden>∑</span>
-        {solverLine(result.solver)}
-      </p>
-
-      <div className="pl-list-head">
-        <h3 className="pl-h3">The plan · {result.portfolio.length} action{result.portfolio.length === 1 ? '' : 's'}</h3>
+      <div className="pp-list-head">
+        <div>
+          <h3 className="pp-h">The plan · {result.portfolio.length} action{result.portfolio.length === 1 ? '' : 's'}</h3>
+          <p className="pp-cap">Numbers match the pins on the map. Turn any action into a project to staff and track it.</p>
+        </div>
         {pending.length > 0 && (
-          <button className="pl-btn small" disabled={busyAll} onClick={p.onCreateAll}>
-            {busyAll ? 'Creating…' : `Make all ${pending.length} projects`}
+          <button className="pl-btn" disabled={busyAll} onClick={p.onCreateAll}>
+            {busyAll ? 'Creating…' : pending.length === 1 ? 'Make it a project' : `Make all ${pending.length} projects`}
           </button>
         )}
       </div>
       {p.createErr && <div className="pl-error">{p.createErr}</div>}
+      {made > 0 && (
+        <a className="pp-next" href="#/projects">
+          <span>
+            <b>{made} of {result.portfolio.length} actions are now projects.</b> Approve them, staff them with volunteers and mark them done as the work happens.
+          </span>
+          <em>Track these in Projects →</em>
+        </a>
+      )}
       {result.portfolio.length === 0 && (
         <div className="pl-empty">Nothing fits within this budget and volunteer time. Try a larger budget or turn on lower-cost options like events and programs.</div>
       )}
-      <ol className="pl-items">
+      <ol className="pp-items">
         {result.portfolio.map((item, i) => {
           const proj = p.projectFor(item)
           const on = p.highlight === item.id
           const c = item.categories[0]
           return (
             <li key={item.id} data-item={item.id} className={on ? 'on' : ''} onClick={() => p.onHighlight(on ? null : item.id)}>
-              <span className="pl-num" style={{ background: c ? CATEGORY_COLOR[c] : '#18191b' }}>{i + 1}</span>
-              <div className="pl-item-body">
-                <b>{item.label}</b>
-                <span className="pl-item-where">{tractName(item.geoid)} · {item.county}</span>
-                <span className="pl-item-stats">
-                  <span><b>{fmtMoney(item.cost)}</b> cost</span>
-                  <span><b>{fmtNum(item.people_reached)}</b> people</span>
-                  {item.volunteers > 0 && <span><b>{fmtNum(item.volunteers)}</b> hrs/mo</span>}
-                </span>
-                {item.why && <p className="pl-why">{item.why}</p>}
-                <div className="pl-item-actions" onClick={(e) => e.stopPropagation()}>
-                  {proj ? (
-                    <button className="pl-btn small done" onClick={() => p.onOpenProject(proj.id)}>✓ Project created · Open</button>
-                  ) : (
-                    <button className="pl-btn small" disabled={p.creating.has(item.id)} onClick={() => p.onCreate(item)}>
-                      {p.creating.has(item.id) ? 'Creating…' : 'Make it a project'}
-                    </button>
-                  )}
+              <div className="pp-item-top">
+                <span className="pl-num" style={{ background: c ? CATEGORY_COLOR[c] : '#18191b' }}>{i + 1}</span>
+                <div>
+                  <b>{item.label}</b>
+                  <span className="pl-item-where">{tractName(item.geoid)} · {item.county}</span>
                 </div>
+              </div>
+              <span className="pl-item-stats">
+                <span><b>{fmtMoney(item.cost)}</b> cost</span>
+                <span><b>{fmtNum(item.people_reached)}</b> people</span>
+                {item.volunteers > 0 && <span><b>{fmtNum(item.volunteers)}</b> hrs/mo</span>}
+              </span>
+              {item.why && <p className="pl-why">{item.why}</p>}
+              <div className="pp-item-actions" onClick={(e) => e.stopPropagation()}>
+                {proj ? (
+                  <a className="pl-btn small done" href={`#/projects?id=${encodeURIComponent(proj.id)}`}>✓ Project created · Open</a>
+                ) : (
+                  <button className="pl-btn small ghost" disabled={p.creating.has(item.id)} onClick={() => p.onCreate(item)}>
+                    {p.creating.has(item.id) ? 'Creating…' : 'Make it a project'}
+                  </button>
+                )}
               </div>
             </li>
           )
         })}
       </ol>
-
-      <div className="pl-next">
-        {result.portfolio.length > 0 && pending.length === 0 && (
-          <button className="pl-btn" onClick={p.onOpenBoard}>Open the project board →</button>
-        )}
-        <div>
-          <button className="pl-btn ghost small" onClick={p.onEdit}>Try a variation</button>
-          {p.canCompare && <button className="pl-btn ghost small" onClick={p.onCompare}>Compare plans</button>}
-        </div>
-      </div>
     </div>
   )
 }
