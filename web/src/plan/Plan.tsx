@@ -69,7 +69,7 @@ export default function Plan() {
     volunteers: 400,
     types: [],
     custom: [],
-    maxPerType: 3,
+    maxPerType: 2,
     name: '',
   }))
   const [suggested, setSuggested] = useState<string | null>(initial.current.type)
