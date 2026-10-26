@@ -86,3 +86,21 @@
 .ha-ring.on { opacity: 0.8; transform: scale(1); }
 .ha-site { opacity: 0; transition: opacity 0.4s ease; }
 .ha-site.on { opacity: 1; }
+
+/* Secondary hero button */
+.lp-button.ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); }
+.lp-button.ghost:hover { background: var(--ink); color: var(--paper); }
+
+/* The loop: how the pieces connect */
+.lp-loop { padding: clamp(56px, 12vh, 120px) clamp(16px, 4vw, 48px) 24px; max-width: 1320px; margin: 0 auto; border-top: 1px solid var(--rule); }
+.lp-loop > .lp-button { margin-bottom: 32px; }
+.lp-loop h2 { font-size: clamp(1.9rem, 3.6vw, 2.9rem); font-weight: 600; letter-spacing: -0.02em; margin: 0 0 22px; max-width: 22em; line-height: 1.1; }
+.lp-loop-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+.lp-loop-steps li { position: relative; background: #fffdf8; border: 1px solid var(--rule); border-radius: 14px; padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
+.lp-loop-steps li:not(:last-child)::after { content: '→'; position: absolute; right: -13px; top: 22px; color: var(--ink-3); font-size: 18px; z-index: 1; }
+.lp-loop-steps b { width: 28px; height: 28px; border-radius: 50%; background: var(--ink); color: var(--paper); display: grid; place-items: center; font-size: 13px; }
+.lp-loop-steps li:last-child b { background: var(--accent); }
+.lp-loop-steps h3 { margin: 4px 0 0; font-size: 1.05rem; }
+.lp-loop-steps p { margin: 0; font-size: 0.92rem; line-height: 1.5; color: var(--ink-2); flex: 1; }
+.lp-loop-steps button { align-self: flex-start; border: none; background: none; padding: 0; font-weight: 600; font-size: 0.92rem; color: var(--accent); }
+@media (max-width: 1000px) { .lp-loop-steps { grid-template-columns: 1fr 1fr; } .lp-loop-steps li::after { display: none; } }

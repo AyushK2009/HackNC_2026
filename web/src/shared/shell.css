@@ -1,0 +1,47 @@
+/* App shell + shared design tokens for every CAC page. */
+:root {
+  --ink: #18191b;
+  --ink-2: #4b4f56;
+  --ink-3: #80858d;
+  --line: #e3e4e6;
+  --bg: #f4f2ee;
+  --card: #ffffff;
+  --accent: #e2513c;
+  --good: #1f7a3f;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(0,0,0,0.06), 0 8px 28px rgba(0,0,0,0.10);
+}
+.shell { position: fixed; inset: 0; display: grid; grid-template-rows: 60px auto 1fr; background: var(--bg); color: var(--ink); font-family: Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; }
+.shell-top { grid-row: 1; display: flex; align-items: center; gap: 24px; padding: 0 20px; background: var(--card); border-bottom: 1px solid var(--line); z-index: 1100; }
+.shell-brand { display: flex; align-items: center; gap: 8px; border: none; background: none; padding: 0; font-family: Fraunces, Georgia, serif; font-size: 20px; font-weight: 600; color: var(--ink); }
+.shell-brand b { color: var(--accent); font-weight: 600; }
+.shell-nav { display: flex; gap: 4px; flex: 1; }
+.shell-nav a { text-decoration: none; color: var(--ink-2); font-size: 14.5px; font-weight: 600; padding: 9px 14px; border-radius: 10px; }
+.shell-nav a:hover { background: var(--bg); }
+.shell-nav a.on { background: var(--ink); color: #fff; }
+.shell-right { display: flex; align-items: center; gap: 10px; }
+.shell-engine { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 999px; background: var(--bg); color: var(--ink-2); }
+.shell-engine.claude { background: #eef2ff; color: #3730a3; }
+.shell-engine.offline { background: #fdecea; color: #b42318; }
+.shell-feed-btn { position: relative; border: 1.5px solid var(--line); background: var(--card); padding: 8px 14px; border-radius: 999px; font-weight: 600; font-size: 13.5px; color: var(--ink); }
+.shell-feed-btn.on { border-color: var(--ink); }
+.shell-feed-btn i { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--accent); color: #fff; font-size: 11px; font-style: normal; display: grid; place-items: center; padding: 0 4px; }
+.shell-offline { grid-row: 2; background: #fdecea; color: #7a271a; font-size: 13.5px; padding: 8px 20px; }
+.shell-offline code { background: #fff; padding: 1px 6px; border-radius: 4px; }
+.shell-main { grid-row: 3; position: relative; min-height: 0; overflow: hidden; }
+.shell-feed { position: fixed; z-index: 1200; top: 68px; right: 16px; width: 380px; max-height: calc(100vh - 90px); overflow-y: auto; background: var(--card); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
+.shell-feed header { display: flex; flex-direction: column; gap: 2px; margin-bottom: 10px; }
+.shell-feed header span { font-size: 12.5px; color: var(--ink-3); }
+.shell-feed ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.shell-feed li { display: grid; grid-template-columns: 10px 1fr; gap: 10px; font-size: 13.5px; }
+.shell-feed li > i { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; }
+.shell-feed li p { margin: 0; line-height: 1.4; }
+.shell-feed li span { font-size: 12px; color: var(--ink-3); }
+.shell-feed li.empty { display: block; color: var(--ink-3); }
+.page-placeholder { padding: 40px; color: var(--ink-3); }
+/* Generic map marker from MapView `markers`. */
+.mk-wrap { background: none; border: none; }
+.mk { border-radius: 50%; border: 2px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.35); display: grid; place-items: center; color: #fff; font-size: 11px; font-weight: 700; cursor: pointer; box-sizing: border-box; }
+.mk:hover { transform: scale(1.15); }
+.shell-tour { text-decoration: none; font-size: 13.5px; font-weight: 700; color: var(--accent); padding: 8px 12px; border-radius: 999px; }
+.shell-tour:hover, .shell-tour.on { background: #fdf1ee; }

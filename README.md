@@ -1,16 +1,42 @@
 # Allocate NC
 
-**Mapping community needs. Connecting people to resources.**
+**A shared, living picture of what North Carolina communities are missing — and a place to act on it.**
 
-Public data on poverty, transportation and essential services exists, but it's hard for nonprofits and local
-planners to read — and knowing *where* need is doesn't tell you *what to build* or *where to put it*.
-Allocate NC turns public tract-level data for all of North Carolina into two maps and a planning tool:
+Residents describe what's hard to reach in their own words. The model updates the need estimate where they live.
+Volunteers are matched to where they're needed most. Nonprofits and planners turn the same picture into budgeted,
+optimized, trackable projects — and when a project is finished, need falls on the map where it reaches.
 
-1. **Economic Hardship**: where economic disadvantage is concentrated (PCA-based index, statewide).
-2. **Service Access**: how close residents live to food assistance, community health centers, transit and
-   public libraries, summarized as a statewide Service Accessibility Percentile.
-3. **Find the best improvements**: which type of facility to add, and where, to improve modeled access the
-   most — prioritizing neighborhoods with higher hardship — with before/after results.
+## What's in the app
+| Section | Who it's for | What you can do |
+|---|---|---|
+| **Needs Map** (`#/map`) | Everyone | See community need for every NC neighborhood across six kinds of need (food, health care, transportation, internet & library, housing, childcare), switch to the hardship or service-access lenses, read resident reports, and open any neighborhood to see *why* it's underserved and what would help. |
+| **Report a need** (`#/report`) | Residents | Write a problem in plain words; the system extracts the kind of need, barriers, who's affected, seriousness and urgency (editable), pins it to a neighborhood and shows how the estimate changed. Neighbors can confirm reports ("me too"). |
+| **Get involved** (`#/involved`) | Volunteers | Set skills, causes, time and distance; get opportunities ranked by how much need there is where they happen, fit, distance and time, with the reason for each match; sign up and fill real project roles. |
+| **Plan & track** (`#/plan`) | Nonprofits, planners | Set an area, budget, volunteer hours and allowed actions (permanent facilities, mobile and pop-up services, programs, events, or your own idea in plain words); an integer program picks the best portfolio; compare scenarios; turn items into projects with milestones, volunteer roles, optimal staffing and an auto-written project brief; mark complete to update the map. |
+| **Watch the loop** (`#/tour`) | Demo | A live, five-step run of the whole cycle: report → model update → plan → staffed project → completion. |
+
+## Run locally
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+cd web && npm install && cd ..
+./dev.sh            # backend on :8000 (FastAPI) + web app on :5173 (Vite, proxies /api)
+```
+Open http://localhost:5173. The backend creates and seeds `server/allocate.db` on first run (demo data:
+simulated reports, organizations, opportunities, volunteers and projects with fictional names);
+`POST /api/reset` reseeds it. Set `ANTHROPIC_API_KEY` to use Claude for report understanding, custom-idea
+parsing and project briefs; without it, built-in local models do the same jobs.
+
+## Models at a glance
+- **Economic Hardship Index** — PCA of poverty, income, SNAP use and car access (below).
+- **Service access** — continuous distance model to food, health, transit and library sites (below).
+- **Community need** — Bayesian evidence fusion: public-data priors per neighborhood and need type, updated by
+  resident reports weighted by credibility, seriousness, recency and distance; with uncertainty intervals.
+- **Report understanding** — TF-IDF + logistic-regression multi-label classifier with barrier/group lexicons
+  (or Claude when a key is set).
+- **Planning** — budgeted maximum-coverage integer program (scipy `milp`) over intervention types × sites with
+  budget, volunteer-hour, capacity and spacing constraints.
+- **Matching** — need-weighted TF-IDF relevance for opportunities; Hungarian algorithm for volunteer staffing.
 
 ## How it works
 
@@ -94,7 +120,7 @@ Raw files are not stored in this repository. Download them into `data/raw/` with
 
 Orange County addresses are geocoded with the U.S. Census Bureau geocoder on first run (cached in `data/interim/`).
 
-## Run locally
+## Rebuild the map data (optional)
 The processed data the app needs is committed in `web/public/data/`, so the app runs from a clean clone:
 
 ```bash
@@ -115,8 +141,10 @@ python3 -m venv .venv
 ```
 
 ## Deploy
-The site is static. On Vercel, set **Root Directory** to `web`; `web/vercel.json` runs `npm ci` and
+The original map site is static. On Vercel, set **Root Directory** to `web`; `web/vercel.json` runs `npm ci` and
 `npm run build` and serves `dist`. No server or environment variables are needed.
+
+The community features (reports, planning, matching) need the FastAPI backend in `server/`, which runs locally.
 
 ## Limitations
 - Distances are straight-line, not walking or driving routes; residents are assumed evenly spread within a tract.
@@ -125,4 +153,4 @@ The site is static. On Vercel, set **Root Directory** to `web`; `web/vercel.json
 - Poverty rates in some tracts near universities likely include students; the index does not adjust for this.
 
 ## Stack
-Python (pandas, GeoPandas, Shapely, scikit-learn) for offline processing; React + TypeScript + Vite + Leaflet for the app.
+Python (pandas, GeoPandas, Shapely, scikit-learn, SciPy) for offline processing and the FastAPI + SQLite backend; React + TypeScript + Vite + Leaflet for the app; optional Claude API.

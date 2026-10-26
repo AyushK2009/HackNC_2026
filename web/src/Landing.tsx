@@ -106,7 +106,7 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
           <Logo size={34} />
           <span>Allocate <b>NC</b></span>
         </div>
-        <button className="lp-nav-button" onClick={onExplore}>Explore the map →</button>
+        <button className="lp-nav-button" onClick={onExplore}>Open Allocate NC →</button>
       </header>
 
       <section className="lp-hero">
@@ -114,15 +114,17 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
           <p className="lp-eyebrow">North Carolina · {s ? fmtInt(s.tracts) : '2,655'} neighborhoods</p>
           <h1>Where you live shouldn't decide how far you travel for help.</h1>
           <p className="lp-lede">
-            Allocate NC shows where North Carolinians face the most economic hardship, how far they live from food
-            assistance, health care, transit and libraries, and where a new site would help the most.
+            Allocate NC is a living map of what North Carolina communities are missing, built from public data and from
+            residents themselves, and a workspace for turning it into action.
           </p>
           <p className="lp-who">
-            Use it to decide where the next food pantry, clinic, bus stop or library should go in your community, so help
-            finally reaches the neighbors who have been farthest from it.
+            Tell us what's hard in your neighborhood, find where your time helps most, or plan the next pantry, clinic,
+            ride program or library with a real budget. Every action updates the same picture, so help reaches the
+            neighbors who have been farthest from it.
           </p>
           <div className="lp-actions">
-            <button className="lp-button" onClick={onExplore}>See it in action →</button>
+            <button className="lp-button" onClick={onExplore}>Open the map →</button>
+            <button className="lp-button ghost" onClick={() => (window.location.hash = '/report')}>Report a need</button>
             <span className="lp-scroll-cue">Scroll to see the problem ↓</span>
           </div>
         </div>
@@ -229,10 +231,47 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
         </div>
       </section>
 
+      <section className="lp-loop">
+        <p className="lp-eyebrow">One shared picture, four ways in</p>
+        <h2>Residents, volunteers and planners all work from the same map.</h2>
+        <button className="lp-button" onClick={() => (window.location.hash = '/tour')}>▶ Watch the whole loop, live</button>
+        <ol className="lp-loop-steps">
+          <li>
+            <b>1</b>
+            <h3>Residents report</h3>
+            <p>Anyone describes what's hard to reach, in their own words. The system reads it and pins it to the neighborhood.</p>
+            <button onClick={() => (window.location.hash = '/report')}>Report a need →</button>
+          </li>
+          <li>
+            <b>2</b>
+            <h3>The map learns</h3>
+            <p>Public data sets the starting point. Recent, specific, confirmed reports raise the need estimate where they happen.</p>
+            <button onClick={() => (window.location.hash = '/map')}>See the Needs Map →</button>
+          </li>
+          <li>
+            <b>3</b>
+            <h3>Planners decide</h3>
+            <p>Set a budget and volunteer hours. Allocate NC picks the mix of projects and places that helps the most people.</p>
+            <button onClick={() => (window.location.hash = '/plan')}>Plan &amp; track →</button>
+          </li>
+          <li>
+            <b>4</b>
+            <h3>Neighbors pitch in</h3>
+            <p>Volunteers see the opportunities where they're needed most and that fit their skills and time.</p>
+            <button onClick={() => (window.location.hash = '/involved')}>Get involved →</button>
+          </li>
+          <li>
+            <b>5</b>
+            <h3>Results feed back</h3>
+            <p>When a project is finished, need falls on the map where it reaches, and the next plan starts from there.</p>
+          </li>
+        </ol>
+      </section>
+
       <section className="lp-cta">
-        <h2>See it for your county.</h2>
-        <p>Explore every neighborhood in North Carolina, compare hardship and access, and find the best places for new services.</p>
-        <button className="lp-button" onClick={onExplore}>Explore the map →</button>
+        <h2>Start with your county.</h2>
+        <p>Every neighborhood in North Carolina, one shared picture of what's missing, and a plan for what to do about it.</p>
+        <button className="lp-button" onClick={onExplore}>Open Allocate NC →</button>
         <p className="lp-sources">
           Data: USDA Economic Research Service, U.S. Census Bureau, HRSA, U.S. Department of Transportation, Institute of
           Museum and Library Services, and county food-assistance lists.

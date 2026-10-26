@@ -12,6 +12,42 @@ const ATTRIBUTION = 'Tiles &copy; Esri &mdash; Esri, HERE, Garmin, &copy; OpenSt
 const MILE = 1609.344
 export const NC_BOUNDS: L.LatLngBoundsExpression = [[33.84, -84.32], [36.59, -75.46]]
 
+// Generic clickable markers (reports, opportunities, projects…). `html` overrides the default dot.
+export type MapMarker = {
+  id: string
+  lat: number
+  lon: number
+  color: string
+  size?: number
+  label?: string
+  tooltip?: string
+  html?: string
+  ringMi?: number
+  onClick?: () => void
+}
+
+function MarkerLayer({ markers }: { markers: MapMarker[] }) {
+  const map = useMap()
+  useEffect(() => {
+    const items: L.Layer[] = []
+    for (const m of markers) {
+      if (m.ringMi)
+        items.push(L.circle([m.lat, m.lon], { pane: 'reach', radius: m.ringMi * MILE, color: m.color, weight: 1.5, dashArray: '5 5', fillColor: m.color, fillOpacity: 0.07, interactive: false }))
+      const size = m.size ?? 14
+      const html = m.html ?? `<div class="mk" style="width:${size}px;height:${size}px;background:${m.color}">${m.label ?? ''}</div>`
+      const mk = L.marker([m.lat, m.lon], { pane: 'markers', icon: L.divIcon({ className: 'mk-wrap', html, iconSize: [size, size], iconAnchor: [size / 2, size / 2] }) })
+      if (m.tooltip) mk.bindTooltip(m.tooltip, { direction: 'top', offset: [0, -size / 2], className: 'tt' })
+      if (m.onClick) mk.on('click', m.onClick)
+      items.push(mk)
+    }
+    const group = L.layerGroup(items).addTo(map)
+    return () => {
+      group.remove()
+    }
+  }, [map, markers])
+  return null
+}
+
 export type ProposedSite = { lat: number; lon: number; label: string; title: string; color: string; radiusMi: number; cat?: ServiceKey; active?: boolean }
 
 type Props = {
@@ -20,10 +56,11 @@ type Props = {
   tooltip: (p: TractProps) => string
   selected: string | null
   onSelect: (geoid: string) => void
-  facilities: Feature<Point, FacilityProps>[]
-  proposed: ProposedSite[]
+  facilities?: Feature<Point, FacilityProps>[]
+  proposed?: ProposedSite[]
   onSiteClick?: (i: number) => void
-  focus: { key: string; bounds: L.LatLngBoundsExpression; padding?: [number, number] }
+  markers?: MapMarker[]
+  focus: { key: string; bounds: L.LatLngBoundsExpression; padding?: [number, number]; paddingBR?: [number, number] }
 }
 
 // Tract choropleth drawn imperatively so restyling 2,600+ polygons doesn't rebuild the layer.
@@ -190,11 +227,15 @@ function NCMask() {
 function Focus({ focus }: { focus: Props['focus'] }) {
   const map = useMap()
   useEffect(() => {
-    map.fitBounds(focus.bounds, { paddingTopLeft: focus.padding ?? [40, 40], paddingBottomRight: [30, 30], maxZoom: 12 })
+    map.fitBounds(focus.bounds, { paddingTopLeft: focus.padding ?? [40, 40], paddingBottomRight: focus.paddingBR ?? [30, 30], maxZoom: 12 })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [map, focus.key])
   return null
 }
+
+const EMPTY_P: ProposedSite[] = []
+const EMPTY_F: Feature<Point, FacilityProps>[] = []
+const EMPTY_M: MapMarker[] = []
 
 export default function MapView(props: Props) {
   return (
@@ -217,9 +258,11 @@ export default function MapView(props: Props) {
       <Pane name="mask" style={{ zIndex: 460, pointerEvents: 'none' }} />
       <NCMask />
       <Pane name="reach" style={{ zIndex: 500, pointerEvents: 'none' }} />
+      <Pane name="markers" style={{ zIndex: 630 }} />
       <Pane name="proposed" style={{ zIndex: 640 }} />
-      <ProposedLayer proposed={props.proposed} onSiteClick={props.onSiteClick} />
-      <FacilityLayer facilities={props.facilities} />
+      <ProposedLayer proposed={props.proposed ?? EMPTY_P} onSiteClick={props.onSiteClick} />
+      <FacilityLayer facilities={props.facilities ?? EMPTY_F} />
+      <MarkerLayer markers={props.markers ?? EMPTY_M} />
       <Focus focus={props.focus} />
     </MapContainer>
   )

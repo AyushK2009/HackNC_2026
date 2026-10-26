@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react'
-import Explore from './Explore.tsx'
 import Landing from './Landing.tsx'
+import AppShell, { type Route } from './shared/AppShell.tsx'
 
-// Two views: the story (landing) and the map (#explore), so a link can open either directly.
+// Hash routes: '' story · '#/map' · '#/report' · '#/involved' · '#/plan'. Old '#explore' links open the map.
+const ROUTES: Route[] = ['map', 'report', 'involved', 'plan', 'tour']
+function read(): Route | 'story' {
+  const h = window.location.hash.replace(/^#\/?/, '')
+  if (h === 'explore') return 'map'
+  const base = h.split('?')[0] as Route
+  return ROUTES.includes(base) ? base : 'story'
+}
+
 export default function Root() {
-  const read = () => (window.location.hash === '#explore' ? 'explore' : 'story')
   const [view, setView] = useState(read)
   useEffect(() => {
     const onHash = () => {
@@ -14,9 +21,5 @@ export default function Root() {
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
-  return view === 'explore' ? (
-    <Explore onHome={() => (window.location.hash = '')} />
-  ) : (
-    <Landing onExplore={() => (window.location.hash = 'explore')} />
-  )
+  return view === 'story' ? <Landing onExplore={() => (window.location.hash = '/map')} /> : <AppShell route={view} />
 }

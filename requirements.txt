@@ -6,3 +6,6 @@ shapely==2.2.0
 scipy==1.18.1
 pyogrio==0.13.0
 openpyxl==3.1.5
+fastapi==0.120.4
+uvicorn==0.38.0
+anthropic==2.3.0

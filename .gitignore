@@ -33,3 +33,9 @@ dist/
 .env
 .env.*
 *.pem
+
+# Allocate NC local database
+server/*.db
+server/*.db-journal
+server/*.db-shm
+server/*.db-wal
