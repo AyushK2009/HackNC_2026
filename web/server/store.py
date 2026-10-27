@@ -2,11 +2,13 @@
 from __future__ import annotations
 
 import json
+import os
 import sqlite3
 import threading
 from pathlib import Path
 
-DB_PATH = Path(__file__).resolve().parent / "allocate.db"
+# On Vercel the code directory is read-only, so the demo database lives in /tmp (reseeded on a cold start).
+DB_PATH = Path("/tmp/allocate.db") if os.environ.get("VERCEL") else Path(__file__).resolve().parent / "allocate.db"
 COLLECTIONS = ["reports", "opportunities", "volunteers", "projects", "activity", "adjustments", "scenarios", "orgs", "customs"]
 
 

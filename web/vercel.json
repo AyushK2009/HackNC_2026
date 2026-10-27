@@ -19,5 +19,18 @@
     "deploymentEnabled": {
       "cac-2026": false
     }
+  },
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/index"
+    }
+  ],
+  "functions": {
+    "api/index.py": {
+      "maxDuration": 60,
+      "includeFiles": "{server/**,public/data/tracts.geojson,public/data/access.json}",
+      "excludeFiles": "{node_modules/**,src/**,dist/**,server/allocate.db*}"
+    }
   }
 }

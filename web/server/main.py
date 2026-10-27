@@ -37,6 +37,17 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Allocate NC API", lifespan=lifespan)
+
+
+# Serverless hosts may skip the lifespan hook; build the state on the first request instead.
+@app.middleware("http")
+async def _ensure_state(request: Request, call_next):
+    global STATE
+    if STATE is None:
+        from .state import State
+
+        STATE = State()
+    return await call_next(request)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:5173", "http://127.0.0.1:5173", "http://localhost:4173", "http://127.0.0.1:4173"],

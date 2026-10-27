@@ -35,7 +35,7 @@ dist/
 *.pem
 
 # Allocate NC local database
-server/*.db
-server/*.db-journal
-server/*.db-shm
-server/*.db-wal
+web/server/*.db
+web/server/*.db-journal
+web/server/*.db-shm
+web/server/*.db-wal

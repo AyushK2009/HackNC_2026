@@ -65,7 +65,7 @@ export default function AppShell({ route }: { route: Route }) {
       </header>
       {engine === 'offline' && (
         <div className="shell-offline">
-          The local server isn't running. Start it with <code>.venv/bin/uvicorn server.main:app --port 8000</code> from the project folder.
+          The app server isn&apos;t responding. Locally, start it with <code>./dev.sh</code> from the project folder.
         </div>
       )}
       <main className="shell-main">

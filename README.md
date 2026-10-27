@@ -26,7 +26,7 @@ python3 -m venv .venv
 cd web && npm install && cd ..
 ./dev.sh            # backend on :8000 (FastAPI) + web app on :5173 (Vite, proxies /api)
 ```
-Open http://localhost:5173. The backend creates and seeds `server/allocate.db` on first run (demo data:
+Open http://localhost:5173. The backend creates and seeds `web/server/allocate.db` on first run (demo data:
 simulated reports, organizations, opportunities, volunteers and projects with fictional names);
 `POST /api/reset` reseeds it. Set `ANTHROPIC_API_KEY` to use Claude for report understanding, custom-idea
 parsing and project briefs; without it, built-in local models do the same jobs.
@@ -148,7 +148,7 @@ python3 -m venv .venv
 The original map site is static. On Vercel, set **Root Directory** to `web`; `web/vercel.json` runs `npm ci` and
 `npm run build` and serves `dist`. No server or environment variables are needed.
 
-The community features (reports, planning, matching) need the FastAPI backend in `server/`, which runs locally.
+The community features (reports, planning, matching) use the FastAPI backend in `web/server/`. Locally it runs with `./dev.sh`; on Vercel it runs as a Python function (`web/api/index.py`) next to the static site.
 
 ## Limitations
 - Distances are straight-line, not walking or driving routes; residents are assumed evenly spread within a tract.

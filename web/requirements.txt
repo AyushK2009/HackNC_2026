@@ -1,0 +1,8 @@
+# Backend for the Vercel Python function (web/api/index.py). Local development uses the root requirements.txt.
+fastapi>=0.110
+pydantic>=2.6
+numpy>=1.26
+scipy>=1.11
+scikit-learn>=1.4
+shapely>=2.0
+anthropic>=0.40

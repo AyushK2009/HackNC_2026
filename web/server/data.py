@@ -4,39 +4,43 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-import geopandas as gpd
 import numpy as np
-from pyproj import Transformer
 from scipy.spatial import cKDTree
-from shapely.geometry import Point
+from shapely import STRtree
+from shapely.geometry import Point, shape
 
-ROOT = Path(__file__).resolve().parent.parent
-DATA = ROOT / "web" / "public" / "data"
+ROOT = Path(__file__).resolve().parent.parent  # web/
+DATA = ROOT / "public" / "data"
 MILE = 1609.344  # meters
 DURHAM = (36.0, -78.9)
+# Local planar projection centred on North Carolina (meters). Accurate to ~1% across the state, and keeps the
+# deployed function free of the heavy GIS stack.
+LAT0, LON0 = 35.5, -79.5
+KX = 111_320.0 * np.cos(np.radians(LAT0))
+KY = 110_574.0
 
 
 class Geo:
     def __init__(self) -> None:
-        gdf = gpd.read_file(DATA / "tracts.geojson")
-        if gdf.crs is None:
-            gdf = gdf.set_crs(4326)
-        gdf = gdf.to_crs(4326)
-        self.gdf = gdf
-        proj = gdf.geometry.to_crs(32119)
-        cent = proj.centroid
-        self.x = cent.x.to_numpy(float)
-        self.y = cent.y.to_numpy(float)
-        cent_ll = gpd.GeoSeries(cent, crs=32119).to_crs(4326)
-        self.lat = cent_ll.y.to_numpy(float)
-        self.lon = cent_ll.x.to_numpy(float)
-        self.n = len(gdf)
+        fc = json.loads((DATA / "tracts.geojson").read_text())
+        feats = fc["features"]
+        self.geoms = [shape(f["geometry"]) for f in feats]
+        props = [f["properties"] for f in feats]
+        cent = [g.centroid for g in self.geoms]
+        self.lat = np.array([c.y for c in cent], float)
+        self.lon = np.array([c.x for c in cent], float)
+        self.x = (self.lon - LON0) * KX
+        self.y = (self.lat - LAT0) * KY
+        self.n = len(feats)
 
-        self.geoids: list[str] = [str(g) for g in gdf["geoid"]]
+        self.geoids: list[str] = [str(p["geoid"]) for p in props]
         self.idx = {g: i for i, g in enumerate(self.geoids)}
         self.fips = np.array([g[2:5] for g in self.geoids])
-        self.county: list[str] = [str(c) for c in gdf["county"]]
-        num = lambda col: gdf[col].astype(float).to_numpy() if col in gdf else np.full(self.n, np.nan)
+        self.county: list[str] = [str(p.get("county")) for p in props]
+
+        def num(col: str) -> np.ndarray:
+            return np.array([np.nan if p.get(col) is None else float(p[col]) for p in props], float)
+
         self.pop = np.nan_to_num(num("pop"), nan=0.0)
         self.poverty = num("poverty_rate")
         self.income = num("median_income")
@@ -60,13 +64,11 @@ class Geo:
                 self.miles[i] = [np.nan if s is None else s for s in v[:4]]
 
         self.tree = cKDTree(np.c_[self.x, self.y])
-        self._to_xy = Transformer.from_crs(4326, 32119, always_xy=True)
-        self.sindex = gdf.sindex
+        self.sindex = STRtree(self.geoms)
 
     # ---- helpers -----------------------------------------------------------------------------------------
     def xy(self, lat: float, lon: float) -> tuple[float, float]:
-        x, y = self._to_xy.transform(lon, lat)
-        return float(x), float(y)
+        return float((lon - LON0) * KX), float((lat - LAT0) * KY)
 
     def locate(self, lat: float, lon: float) -> int | None:
         """Neighborhood containing a point (or nearest centroid within 3 miles)."""
@@ -102,7 +104,7 @@ class Geo:
 
     def random_point(self, i: int, rng) -> tuple[float, float]:
         """Random point inside neighborhood i (lat, lon)."""
-        geom = self.gdf.geometry.iloc[i]
+        geom = self.geoms[i]
         minx, miny, maxx, maxy = geom.bounds
         for _ in range(60):
             lon = rng.uniform(minx, maxx)
