@@ -110,7 +110,7 @@ export default function ProjectDrawer({ project: p, completion, busy, onClose, o
         <div>
           <p className="pl-kicker">{p.label}</p>
           <h2>{p.title}</h2>
-          <span className="pl-dr-where">{tractName(p.geoid)} · {p.county} · <a href={`#/map?geoid=${p.geoid}`}>See on the Needs map</a></span>
+          <span className="pl-dr-where">{tractName(p.geoid)} · {p.county} · <a href={`#/map?geoid=${p.geoid}`}>See on the Community map</a></span>
         </div>
         <button className="pl-x big" aria-label="Close" onClick={onClose}>×</button>
       </header>

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { api, CATEGORIES, CATEGORY_LABEL, modelEvents, type Category, type NeedChange, type NeedDetail } from '../shared/api'
 import { useBaseData } from '../shared/baseData'
+import { getMode } from '../shared/mode'
 import { fmtInt } from '../format'
 import { IconAccess, IconIndex, IconSpark } from '../icons'
 import { ago, barrierLabel, CatDot, catColor, CATEGORY_NOUN, fipsOf, groupLabel, loadLSArray, needPctScale, r0, saveLS, STATUS } from './common'
@@ -44,9 +45,14 @@ export default function NeedPanel({ geoid, detail, error, onClose }: Props) {
 
   const tasks = (
     <div className="cm-tasks">
-      <a className="cm-task primary" href={`#/report?geoid=${geoid}`}>Report something here</a>
-      <a className="cm-task" href={`#/involved?geoid=${geoid}`}>Ways to help nearby</a>
-      <a className="cm-task" href={`#/plan?geoid=${geoid}`}>Plan for this area</a>
+      {getMode() === 'planner' ? (
+        <a className="cm-task primary" href={`#/plan?geoid=${geoid}`}>Plan for this area</a>
+      ) : (
+        <>
+          <a className="cm-task primary" href={`#/report?geoid=${geoid}`}>Report something here</a>
+          <a className="cm-task" href={`#/involved?geoid=${geoid}`}>Ways to help nearby</a>
+        </>
+      )}
     </div>
   )
 
@@ -223,7 +229,7 @@ export default function NeedPanel({ geoid, detail, error, onClose }: Props) {
                   <b>{s.label}</b>
                   <p>{s.why}</p>
                 </div>
-                <a className="cm-btn small" href={`#/plan?county=${fips}&type=${encodeURIComponent(s.type)}&geoid=${geoid}`}>Plan this</a>
+                {getMode() === 'planner' && <a className="cm-btn small" href={`#/plan?county=${fips}&type=${encodeURIComponent(s.type)}&geoid=${geoid}`}>Plan this</a>}
               </li>
             ))}
           </ul>

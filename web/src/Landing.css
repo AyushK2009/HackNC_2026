@@ -94,7 +94,7 @@
 /* The loop: how the pieces connect */
 .lp-loop { padding: clamp(56px, 12vh, 120px) clamp(16px, 4vw, 48px) 24px; max-width: 1320px; margin: 0 auto; border-top: 1px solid var(--rule); }
 .lp-loop > .lp-button { margin-bottom: 32px; }
-.lp-loop h2 { font-size: clamp(1.9rem, 3.6vw, 2.9rem); font-weight: 600; letter-spacing: -0.02em; margin: 0 0 22px; max-width: 22em; line-height: 1.1; }
+.lp-loop h2 { font-size: clamp(1.9rem, 3.6vw, 2.9rem); font-weight: 600; letter-spacing: -0.02em; margin: 0 0 32px; max-width: 22em; line-height: 1.1; }
 .lp-loop-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
 .lp-loop-steps li { position: relative; background: #fffdf8; border: 1px solid var(--rule); border-radius: 14px; padding: 18px 16px 16px; display: flex; flex-direction: column; gap: 8px; }
 .lp-loop-steps li:not(:last-child)::after { content: '→'; position: absolute; right: -13px; top: 22px; color: var(--ink-3); font-size: 18px; z-index: 1; }
@@ -104,15 +104,19 @@
 .lp-loop-steps p { margin: 0; font-size: 0.92rem; line-height: 1.5; color: var(--ink-2); flex: 1; }
 .lp-loop-steps button { align-self: flex-start; border: none; background: none; padding: 0; font-weight: 600; font-size: 0.92rem; color: var(--accent); }
 @media (max-width: 1000px) { .lp-loop-steps { grid-template-columns: 1fr 1fr; } .lp-loop-steps li::after { display: none; } }
-.lp-nav-link { border: none; background: none; font-size: 16px; font-weight: 600; color: var(--ink); padding: 10px 4px; }
-.lp-nav-link:hover { color: var(--accent); }
-.lp-actions { flex-direction: column; align-items: flex-start; gap: 16px; }
-.lp-start { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-.lp-start-picker { width: 270px; }
-.lp-start-picker.cbx .cbx-control { height: 56px; border-radius: 999px; padding-left: 22px; border-color: var(--ink); background: #fff; }
-.lp-start .lp-button { height: 56px; padding: 0 28px; }
-.lp-alt { font-size: 16px; color: var(--ink-2); display: flex; gap: 28px; align-items: baseline; flex-wrap: wrap; }
-.lp-alt a { color: var(--ink); font-weight: 600; }
-.lp-alt .lp-scroll-cue { font-size: 16px; }
-.lp-cta .lp-start { justify-content: center; }
-.lp-cta .cbx-list { text-align: left; }
+.lp-actions { flex-direction: column; align-items: stretch; gap: 18px; max-width: 660px; }
+.lp-roles { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.lp-role { text-align: left; display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; border-radius: 18px; border: 1.5px solid var(--ink); background: #fff; color: var(--ink); cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; font-family: inherit; }
+.lp-role:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.12); }
+.lp-role span { font-size: 12.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--accent); }
+.lp-role b { font-family: Fraunces, Georgia, serif; font-size: 22px; font-weight: 600; }
+.lp-role p { margin: 2px 0 0; font-size: 14.5px; line-height: 1.45; color: var(--ink-2); }
+.lp-role.dark { background: #1c2430; border-color: #1c2430; color: #fff; }
+.lp-role.dark span { color: #9fbff5; }
+.lp-role.dark p { color: rgba(255,255,255,0.75); }
+.lp-under { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+.lp-walk { border: 1.5px solid var(--accent); background: #fff; color: var(--accent); font-weight: 700; font-size: 15.5px; padding: 12px 20px; border-radius: 999px; cursor: pointer; font-family: inherit; }
+.lp-walk:hover { background: var(--accent); color: #fff; }
+.lp-walk.center { margin-top: 18px; }
+.lp-cta .lp-roles { max-width: 700px; margin: 0 auto; }
+@media (max-width: 700px) { .lp-roles { grid-template-columns: 1fr; } }

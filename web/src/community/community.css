@@ -151,7 +151,7 @@
 .cm-go { color: var(--ink-3); font-size: 18px; }
 .cm-glance-tasks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px; }
 .cm-glance-tasks .cm-btn { padding: 9px 10px; font-size: 13px; white-space: normal; text-align: center; }
-.cm-glance-tasks .cm-btn.primary { grid-column: 1 / -1; }
+.cm-glance-tasks .cm-btn.primary { grid-column: auto; }
 
 /* Collapsible sections */
 .cm-more { margin-top: 14px; border-top: 1px solid var(--line); padding-top: 10px; }
@@ -167,7 +167,7 @@
 
 /* Neighborhood drawer additions */
 .cm-tasks { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px; }
-.cm-tasks .cm-task.primary { grid-column: 1 / -1; }
+.cm-tasks .cm-task.primary:only-child { grid-column: 1 / -1; }
 .cm-task { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 36px; padding: 6px 8px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--card); color: var(--ink); font-size: 12.5px; font-weight: 600; line-height: 1.25; text-decoration: none; transition: border-color 0.15s, background 0.15s; }
 .cm-task:hover { border-color: var(--ink); }
 .cm-task.primary { background: var(--ink); border-color: var(--ink); color: #fff; }

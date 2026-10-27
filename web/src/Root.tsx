@@ -2,9 +2,9 @@ import { useEffect, useState } from 'react'
 import Landing from './Landing.tsx'
 import AppShell, { type Route } from './shared/AppShell.tsx'
 
-// Hash routes: '' story · '#/home' · '#/map' · '#/report' · '#/involved' · '#/plan' · '#/projects' · '#/tour'.
+// Hash routes: '' story · '#/home' (community) · '#/org' (planning) · '#/map' · '#/report' · '#/involved' · '#/plan' · '#/projects' · '#/tour'.
 // Old '#explore' links open the map.
-const ROUTES: Route[] = ['home', 'map', 'report', 'involved', 'plan', 'projects', 'tour']
+const ROUTES: Route[] = ['home', 'org', 'map', 'report', 'involved', 'plan', 'projects', 'tour']
 function read(): Route | 'story' {
   const h = window.location.hash.replace(/^#\/?/, '')
   if (h === 'explore') return 'map'

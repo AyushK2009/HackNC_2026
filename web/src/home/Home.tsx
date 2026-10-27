@@ -4,7 +4,8 @@ import { api, modelEvents, CATEGORIES, CATEGORY_COLOR, CATEGORY_LABEL, type Acti
 import { useBaseData } from '../shared/baseData'
 import { usePlace, setPlace, shortCounty } from '../shared/place'
 import PlacePicker from '../shared/PlacePicker'
-import { countyBounds, countyCenter, fipsOf, needPctScale, ago, LegendBar } from '../community/common'
+import { useMode } from '../shared/mode'
+import { countyBounds, countyCenter, fipsOf, needPctScale, ago, LegendBar, STATUS } from '../community/common'
 import { ordinal } from '../format'
 import './home.css'
 
@@ -39,6 +40,7 @@ function aggregate(rows: [NeedSummary, number][]): Agg {
 export default function Home() {
   const base = useBaseData()
   const [place] = usePlace()
+  const planner = useMode() === 'planner'
   const [needs, setNeeds] = useState<Record<string, NeedSummary> | null>(null)
   const [feed, setFeed] = useState<Activity[]>([])
   const [projects, setProjects] = useState<Project[]>([])
@@ -95,7 +97,10 @@ export default function Home() {
     return { local, state, rank, total: counties.length, ranked, above, scaleMax, hotspots, topCounties: counties.slice(0, 4) }
   }, [base, needs, place])
 
-  const localFeed = useMemo(() => (place ? feed.filter((a) => a.county === place.name) : feed).slice(0, 7), [feed, place])
+  const localFeed = useMemo(
+    () => (place ? feed.filter((a) => a.county === place.name) : feed).filter((a) => !planner || a.kind === 'report' || a.kind === 'need').slice(0, 7),
+    [feed, place, planner],
+  )
   const localProjects = useMemo(() => (place ? projects.filter((p) => p.county === place.name) : projects), [projects, place])
   const active = localProjects.filter((p) => ACTIVE.includes(p.status)).length
   const done = localProjects.filter((p) => p.status === 'complete').length
@@ -128,7 +133,7 @@ export default function Home() {
       <div className="hm-inner">
         <section className="hm-head">
           <div className="hm-head-text">
-            <span className="hm-eyebrow">{place ? 'Your community' : 'Start here'}</span>
+            <span className="hm-eyebrow">{planner ? 'Planning workspace' : place ? 'Your community' : 'Start here'}</span>
             <h1>{place ? where : 'Where is your community?'}</h1>
             {place && stats ? (
               <p className="hm-sum">
@@ -149,7 +154,11 @@ export default function Home() {
                     : <>Overall need is lower than in most counties (<b>{ordinal(stats.rank)} of {stats.total}</b>), but some neighborhoods are far above it.</>}
               </p>
             ) : (
-              <p className="hm-sum">Pick your county and every part of Allocate NC starts there: the map, ways to help, plans and projects.</p>
+              <p className="hm-sum">
+                {planner
+                  ? 'Pick the county you serve. Plans, projects and the map all start there.'
+                  : 'Pick your county and everything here starts there: the map, reporting a need, and ways to help.'}
+              </p>
             )}
           </div>
           {place ? (
@@ -159,32 +168,49 @@ export default function Home() {
           )}
         </section>
 
-        <section className="hm-tasks">
-          <a className="hm-task report" href="#/report">
-            <span className="hm-task-k">Something is hard where you live?</span>
-            <b>Report a need</b>
-            <p>Say it in your own words. The map updates the moment you send it.</p>
-            <em>{reports != null ? `${reports.toLocaleString()} report${reports === 1 ? '' : 's'} in ${short} so far` : ' '}</em>
-          </a>
-          <a className="hm-task" href="#/involved">
-            <span className="hm-task-k">Have time to give?</span>
-            <b>Volunteer</b>
-            <p>Opportunities ranked by where need is highest and what fits you.</p>
-            <em>{ways != null ? `${ways} way${ways === 1 ? '' : 's'} to help ${place ? `near ${short}` : 'statewide'}` : ' '}</em>
-          </a>
-          <a className="hm-task" href={place ? `#/plan?county=${place.fips}` : '#/plan'}>
-            <span className="hm-task-k">Deciding where services go?</span>
-            <b>Plan services</b>
-            <p>Set a budget and get the mix of services that reaches the most need.</p>
-            <em>Plans in about a second</em>
-          </a>
-          <a className="hm-task" href="#/projects">
-            <span className="hm-task-k">Already doing the work?</span>
-            <b>Projects</b>
-            <p>Track milestones, staff volunteers, and see need drop when you finish.</p>
-            <em>{active} underway · {done} finished{place ? ` in ${short}` : ''}</em>
-          </a>
-        </section>
+        {planner ? (
+          <section className="hm-tasks">
+            <a className="hm-task primary" href={place ? `#/plan?county=${place.fips}` : '#/plan'}>
+              <span className="hm-task-k">Deciding where services go?</span>
+              <b>Plan services</b>
+              <p>Set a budget and volunteer hours. Get the mix of services and places that reaches the most need.</p>
+              <em>Plans in about a second</em>
+            </a>
+            <a className="hm-task" href="#/projects">
+              <span className="hm-task-k">Already doing the work?</span>
+              <b>Projects</b>
+              <p>Track milestones, staff volunteers, and see need drop on the map when you finish.</p>
+              <em>{active} underway · {done} finished{place ? ` in ${short}` : ''}</em>
+            </a>
+            <a className="hm-task" href="#/map">
+              <span className="hm-task-k">Need the evidence?</span>
+              <b>Community map</b>
+              <p>Need by neighborhood, what drives it, and what residents are reporting.</p>
+              <em>{reports != null ? `${reports.toLocaleString()} resident report${reports === 1 ? '' : 's'} in ${short}` : '\u00a0'}</em>
+            </a>
+          </section>
+        ) : (
+          <section className="hm-tasks">
+            <a className="hm-task primary" href="#/report">
+              <span className="hm-task-k">Something is hard where you live?</span>
+              <b>Report a need</b>
+              <p>Say it in your own words. The map updates the moment you send it.</p>
+              <em>{reports != null ? `${reports.toLocaleString()} report${reports === 1 ? '' : 's'} in ${short} so far` : '\u00a0'}</em>
+            </a>
+            <a className="hm-task" href="#/involved">
+              <span className="hm-task-k">Have time to give?</span>
+              <b>Volunteer</b>
+              <p>Opportunities ranked by where need is highest and what fits you.</p>
+              <em>{ways != null ? `${ways} way${ways === 1 ? '' : 's'} to help ${place ? `near ${short}` : 'statewide'}` : '\u00a0'}</em>
+            </a>
+            <a className="hm-task" href="#/map">
+              <span className="hm-task-k">Curious what your area needs?</span>
+              <b>Community map</b>
+              <p>See every neighborhood, why it's underserved, and what neighbors are saying.</p>
+              <em>{active} project{active === 1 ? '' : 's'} underway{place ? ` in ${short}` : ''}</em>
+            </a>
+          </section>
+        )}
 
         <section className="hm-grid">
           <div className="hm-card hm-mapcard">
@@ -193,7 +219,7 @@ export default function Home() {
                 <h2>Where help is needed{place ? ` in ${short}` : ''}</h2>
                 <span>Darker neighborhoods have more need. Click one to see why.</span>
               </div>
-              <a className="hm-link" href="#/map">Open the needs map →</a>
+              <a className="hm-link" href="#/map">Open the community map →</a>
             </header>
             <div className="hm-map">
               {base && needs ? (
@@ -265,13 +291,13 @@ export default function Home() {
           <div className="hm-card hm-feed">
             <header>
               <div>
-                <h2>Latest {place ? `in ${short}` : 'across the state'}</h2>
-                <span>Every report, sign-up and finished project changes the map for everyone.</span>
+                <h2>{planner ? 'What residents are reporting' : `Latest ${place ? `in ${short}` : 'across the state'}`}</h2>
+                <span>{planner ? 'New reports raise need on the map, so the next plan starts from them.' : 'Every report, sign-up and finished project changes the map for everyone.'}</span>
               </div>
             </header>
             <ul>
               {localFeed.map((a) => {
-                const href = a.kind === 'project' || a.kind === 'complete' || a.kind === 'signup' ? '#/projects' : a.geoid ? `#/map?geoid=${a.geoid}` : '#/map'
+                const href = planner && (a.kind === 'project' || a.kind === 'complete' || a.kind === 'signup') ? '#/projects' : a.geoid ? `#/map?geoid=${a.geoid}` : '#/map'
                 return (
                   <li key={a.id}>
                     <a href={href}>
@@ -292,6 +318,33 @@ export default function Home() {
             </ul>
           </div>
 
+{planner ? (
+          <div className="hm-card hm-projects">
+            <header>
+              <div>
+                <h2>Projects{place ? ` in ${short}` : ''}</h2>
+                <span>From plan to finished work</span>
+              </div>
+              <a className="hm-link" href="#/projects">Board →</a>
+            </header>
+            <ul>
+              {localProjects.filter((p) => p.status !== 'complete').slice(0, 5).map((p) => (
+                <li key={p.id}>
+                  <a href={`#/projects?id=${p.id}`}>
+                    <b>{p.label}</b>
+                    <span>{STATUS[p.status] ?? p.status} · {Math.round(p.progress)}% done</span>
+                    <i><i style={{ width: `${Math.round(p.progress)}%` }} /></i>
+                  </a>
+                </li>
+              ))}
+              {!localProjects.some((p) => p.status !== 'complete') && (
+                <li className="empty">
+                  No projects yet{place ? ` in ${short}` : ''}. <a href="#/plan">Build a plan</a> to start one.
+                </li>
+              )}
+            </ul>
+          </div>
+          ) : (
           <a className="hm-card hm-walk" href="#/tour">
             <span className="hm-eyebrow">See how it connects</span>
             <h2>Follow one report from a resident to a finished project</h2>
@@ -305,6 +358,7 @@ export default function Home() {
             </ol>
             <b>Start the walkthrough →</b>
           </a>
+          )}
         </section>
       </div>
     </div>

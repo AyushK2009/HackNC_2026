@@ -4,6 +4,7 @@ import MapView, { NC_BOUNDS, type MapMarker } from '../MapView'
 import { api, CATEGORIES, CATEGORY_LABEL, modelEvents, type Category, type NeedDetail, type NeedSummary, type Project, type Report } from '../shared/api'
 import { useBaseData, type BaseData } from '../shared/baseData'
 import PlacePicker from '../shared/PlacePicker'
+import { getMode } from '../shared/mode'
 import { shortCounty, usePlace, type Place } from '../shared/place'
 import { HARDSHIP_METRICS, type TractProps } from '../metrics'
 import { accessScale, hardshipScale } from '../scale'
@@ -439,9 +440,17 @@ function AtAGlance({ base, place, needs, reports, projects, pulse, cat, onPickTr
       )}
 
       <div className="cm-glance-tasks">
-        <a className="cm-btn primary" href="#/report">Report a need here</a>
-        <a className="cm-btn" href="#/involved">Find ways to help</a>
-        <a className="cm-btn" href={fips ? `#/plan?county=${fips}` : '#/plan'}>{fips ? `Plan services for ${shortCounty(name)}` : 'Plan services'}</a>
+        {getMode() === 'planner' ? (
+          <>
+            <a className="cm-btn primary" href={fips ? `#/plan?county=${fips}` : '#/plan'}>{fips ? `Plan services for ${shortCounty(name)}` : 'Plan services'}</a>
+            <a className="cm-btn" href="#/projects">See projects</a>
+          </>
+        ) : (
+          <>
+            <a className="cm-btn primary" href="#/report">Report a need here</a>
+            <a className="cm-btn" href="#/involved">Find ways to help</a>
+          </>
+        )}
       </div>
 
       {here && (

@@ -2,18 +2,22 @@ import { useEffect, useRef, useState } from 'react'
 import { SERVICE_COLORS, SEVERITY, type ServiceKey } from './metrics'
 import { fmtInt } from './format'
 import HeroArt from './HeroArt'
-import PlacePicker from './shared/PlacePicker'
-import { usePlace, shortCounty } from './shared/place'
+import { setMode } from './shared/mode'
 import './Landing.css'
 
-// The one way in: pick your county, then open the app already focused there.
-function CountyStart({ onGo }: { onGo: () => void }) {
-  const [place] = usePlace()
+// Two ways in, two different places: the community side and the planning workspace.
+function RoleChoice({ onCommunity }: { onCommunity: () => void }) {
   return (
-    <div className="lp-start">
-      <PlacePicker size="lg" className="lp-start-picker" allowState={false} placeholder="Type your county" />
-      <button className="lp-button" onClick={onGo}>
-        {place ? `See what ${shortCounty(place.name)} needs →` : 'See what your county needs →'}
+    <div className="lp-roles">
+      <button className="lp-role" onClick={() => { setMode('community'); onCommunity() }}>
+        <span>Residents and volunteers</span>
+        <b>I'm part of the community →</b>
+        <p>Report what's hard where you live, see what your neighborhood needs, and find ways to help.</p>
+      </button>
+      <button className="lp-role dark" onClick={() => { setMode('planner'); window.location.hash = '/org' }}>
+        <span>Nonprofits, council members, planners</span>
+        <b>I plan services →</b>
+        <p>Decide where services, programs and events go with a real budget, then track the work.</p>
       </button>
     </div>
   )
@@ -121,7 +125,6 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
           <Logo size={34} />
           <span>Allocate <b>NC</b></span>
         </div>
-        <button className="lp-nav-link" onClick={() => document.querySelector('.lp-loop')?.scrollIntoView({ behavior: 'smooth' })}>How it works</button>
       </header>
 
       <section className="lp-hero">
@@ -132,16 +135,11 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
             Allocate NC is a living map of what North Carolina communities are missing, built from public data and from
             residents themselves, and a workspace for turning it into action.
           </p>
-          <p className="lp-who">
-            Tell us what's hard in your neighborhood, find where your time helps most, or plan the next pantry, clinic,
-            ride program or library with a real budget. Every action updates the same picture, so help reaches the
-            neighbors who have been farthest from it.
-          </p>
           <div className="lp-actions">
-            <CountyStart onGo={onExplore} />
-            <div className="lp-alt">
-              <span>Or <a href="#/report">report a need</a> right now.</span>
-              <span className="lp-scroll-cue">Scroll to see the problem ↓</span>
+            <RoleChoice onCommunity={onExplore} />
+            <div className="lp-under">
+              <button className="lp-walk" onClick={() => (window.location.hash = '/tour')}>▶ Watch the 1-minute walkthrough</button>
+              <span className="lp-scroll-cue">Scroll to see how it works ↓</span>
             </div>
           </div>
         </div>
@@ -251,37 +249,31 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
       <section className="lp-loop">
         <p className="lp-eyebrow">One shared picture, four ways in</p>
         <h2>Residents, volunteers and planners all work from the same map.</h2>
-        <button className="lp-button" onClick={() => (window.location.hash = '/tour')}>Follow one report through, live</button>
         <ol className="lp-loop-steps">
           <li>
             <b>1</b>
             <h3>Residents report</h3>
             <p>Anyone describes what's hard to reach, in their own words. The system reads it and pins it to the neighborhood.</p>
-            <button onClick={() => (window.location.hash = '/report')}>Report a need →</button>
           </li>
           <li>
             <b>2</b>
             <h3>The map learns</h3>
             <p>Public data sets the starting point. Recent, specific, confirmed reports raise the need estimate where they happen.</p>
-            <button onClick={() => (window.location.hash = '/map')}>See the needs map →</button>
           </li>
           <li>
             <b>3</b>
             <h3>Planners decide</h3>
             <p>Set a budget and volunteer hours. Allocate NC picks the mix of projects and places that helps the most people.</p>
-            <button onClick={() => (window.location.hash = '/plan')}>Plan services →</button>
           </li>
           <li>
             <b>4</b>
             <h3>Neighbors pitch in</h3>
             <p>Volunteers see the opportunities where they're needed most and that fit their skills and time.</p>
-            <button onClick={() => (window.location.hash = '/involved')}>Volunteer →</button>
           </li>
           <li>
             <b>5</b>
             <h3>Results feed back</h3>
             <p>When a project is finished, need falls on the map where it reaches, and the next plan starts from there.</p>
-            <button onClick={() => (window.location.hash = '/projects')}>Projects →</button>
           </li>
         </ol>
       </section>
@@ -289,7 +281,8 @@ export default function Landing({ onExplore }: { onExplore: () => void }) {
       <section className="lp-cta">
         <h2>Start with your county.</h2>
         <p>Every neighborhood in North Carolina, one shared picture of what's missing, and a plan for what to do about it.</p>
-        <CountyStart onGo={onExplore} />
+        <RoleChoice onCommunity={onExplore} />
+        <button className="lp-walk center" onClick={() => (window.location.hash = '/tour')}>▶ Watch the 1-minute walkthrough</button>
         <p className="lp-sources">
           Data: USDA Economic Research Service, U.S. Census Bureau, HRSA, U.S. Department of Transportation, Institute of
           Museum and Library Services, and county food-assistance lists.

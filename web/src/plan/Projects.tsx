@@ -138,7 +138,7 @@ export default function Projects() {
             <h2>No projects yet</h2>
             <p>Projects start from a plan. Build one, then turn its actions into projects to approve, staff and track here.</p>
             <a className="pl-run" href="#/plan">Build a plan</a>
-            <span>When a project is marked complete, need goes down on the Needs map for everyone.</span>
+            <span>When a project is marked complete, need goes down on the Community map for everyone.</span>
           </div>
         )}
 

@@ -75,3 +75,18 @@
 .hm-walk ol li { counter-increment: st; font-size: 12.5px; font-weight: 700; padding: 5px 10px 5px 8px; border-radius: 999px; background: #fff; color: var(--ink); }
 .hm-walk ol li::before { content: counter(st); display: inline-grid; place-items: center; width: 17px; height: 17px; margin-right: 6px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 10.5px; }
 .hm-walk b { margin-top: auto; color: var(--accent); font-size: 15px; }
+.hm-tasks { grid-template-columns: repeat(3, 1fr); }
+.hm-task.primary { background: var(--ink); border-color: var(--ink); color: #fff; }
+.hm-task.primary .hm-task-k, .hm-task.primary p { color: rgba(255,255,255,0.72); }
+.hm-task.primary b::after { color: rgba(255,255,255,0.6); }
+.hm-task.primary em { background: rgba(255,255,255,0.12); color: #fff; }
+.mode-planner .hm-task.primary { background: #1c2430; border-color: #1c2430; }
+.mode-planner .hm-eyebrow { color: #2f5fb3; }
+.hm-projects ul { list-style: none; margin: 0; padding: 0; }
+.hm-projects li a { display: grid; gap: 3px; padding: 10px 0; border-top: 1px solid var(--line); text-decoration: none; color: var(--ink); }
+.hm-projects li:first-child a { border-top: none; }
+.hm-projects li a b { font-size: 14.5px; }
+.hm-projects li a span { font-size: 12.5px; color: var(--ink-3); }
+.hm-projects li a > i { display: block; height: 5px; border-radius: 3px; background: var(--bg); overflow: hidden; }
+.hm-projects li a > i > i { display: block; height: 100%; background: var(--good); }
+.hm-projects li.empty { font-size: 14px; color: var(--ink-3); padding: 8px 0; }

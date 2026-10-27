@@ -320,7 +320,7 @@ export default function Tour() {
             </div>
             <p className="tour-sub">The next resident report, plan, or volunteer search starts from this updated picture.</p>
             <div className="tour-row">
-              <button className="tour-btn ghost" onClick={() => (window.location.hash = '/map')}>See it on the needs map</button>
+              <button className="tour-btn ghost" onClick={() => (window.location.hash = '/map')}>See it on the community map</button>
               <button className="tour-btn ghost" onClick={() => (window.location.hash = project ? `/projects?id=${project.id}` : '/projects')}>Open the project</button>
               <button className="tour-btn ghost" disabled={busy} onClick={restart}>Reset demo data</button>
             </div>
